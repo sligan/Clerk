@@ -4,12 +4,12 @@ import os
 import pandas as pd
 load_dotenv()
 
-yahhht_connection = psycopg2.connect(database=os.getenv('DB_BRTH'),
+breathhh_connection = psycopg2.connect(database=os.getenv('DB_BRTH'),
                               user=os.getenv('USER_BRTH'),
                               password=os.getenv('PASS_BRTH'),
                               host=os.getenv('HOST_BRTH'),
                               port=os.getenv('PORT_BRTH'))
-cursor = yahhht_connection.cursor()
+cursor = breathhh_connection.cursor()
 
 
 def get_actions(query="""SELECT * FROM actions"""):
