@@ -2,6 +2,18 @@ from flask import request, Response
 from db_connect import get_users, get_actions
 from datetime import datetime, timedelta
 from main import app, client
+from math import floor
+
+
+def compare(x, y):
+    try:
+        z = x / y * 100 - 100
+        if z < 0:
+            return f':small_red_triangle_down: {floor(z)}% at previous'
+        else:
+            return f'▲ +{floor(z)}% at previous'
+    except ZeroDivisionError:
+        return 'Еще не было пользователей за прошлый'
 
 
 @app.route('/users-total', methods=['POST'])
@@ -19,13 +31,14 @@ def dau():
     actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-    actions = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=1)]
-    current_dau = actions['user_id'].nunique()
+    current_dau = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=1)]['user_id'].nunique()
+    for_compare = (actions.loc[(actions['created_at'] > datetime.today() - timedelta(days=2))
+                               & (actions['created_at'] < datetime.today() - timedelta(days=1))]['user_id'].nunique())
     client.chat_postMessage(channel=channel_id,
                             text='Project: Breathhh \n Metric: DAU '
                                  f'\n Period: Day ({((datetime.today() - timedelta(days=1)).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")})'
-                                 f'\n Value: {current_dau}')
+                                 f'\n Value: {current_dau} ({compare(current_dau, for_compare)} day )')
     return Response(), 200
 
 
@@ -34,13 +47,14 @@ def wau():
     actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-    actions = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=7)]
-    current_wau = actions['user_id'].nunique()
+    current_wau = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=7)]['user_id'].nunique()
+    for_compare = (actions.loc[(actions['created_at'] > datetime.today() - timedelta(days=14))
+                               & (actions['created_at'] < datetime.today() - timedelta(days=7))]['user_id'].nunique())
     client.chat_postMessage(channel=channel_id,
                             text=f'Project: Breathhh \n Metric: WAU'
                                  f'\n Period: Week ({((datetime.today() - timedelta(days=7)).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")})'
-                                 f'\n Value: {current_wau}')
+                                 f'\n Value: {current_wau} ({compare(current_wau, for_compare)} week )')
     return Response(), 200
 
 
@@ -49,13 +63,14 @@ def mau():
     actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-    actions = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=30)]
-    current_mau = actions['user_id'].nunique()
+    current_mau = actions.loc[actions['updated_at'] > datetime.today() - timedelta(days=30)]['user_id'].nunique()
+    for_compare = (actions.loc[(actions['created_at'] > datetime.today() - timedelta(days=60))
+                               & (actions['created_at'] < datetime.today() - timedelta(days=30))]['user_id'].nunique())
     client.chat_postMessage(channel=channel_id,
                             text=f'Project: Breathhh \n Metric: MAU'
                                  f'\n Period: Month ({((datetime.today() - timedelta(days=30)).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")})'
-                                 f'\n Value: {current_mau}')
+                                 f'\n Value: {current_mau} ({compare(current_mau, for_compare)} month )')
     return Response(), 200
 
 
