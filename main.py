@@ -12,4 +12,4 @@ slack_event_adapter = SlackEventAdapter(os.getenv('SECRET'), '/slack/events', ap
 
 if __name__ == '__main__':
     from commands.breathhh import *
-    app.run(debug=False)
+    app.run(port=os.getenv('PORT'))
