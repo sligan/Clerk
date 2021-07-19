@@ -9,7 +9,7 @@ def compare(x, y):
     try:
         z = x / y * 100 - 100
         if z < 0:
-            return f':small_red_triangle_down: {floor(z)}% at previous'
+            return f'▼ {floor(z)}% at previous'
         else:
             return f'▲ +{floor(z)}% at previous'
     except ZeroDivisionError:
