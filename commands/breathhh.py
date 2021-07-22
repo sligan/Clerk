@@ -2,8 +2,8 @@ from flask import request, Response
 from db_connect import get_users, get_actions
 from datetime import datetime
 from main import app, client
+from commands import timestamp
 from math import floor
-import timestamp
 
 
 def compare(x, y):
@@ -49,8 +49,8 @@ def breathhh_day():
     channel_id = data.get('channel_id')
 
     current_dau = actions.loc[actions['updated_at'] > timestamp.yesterday]['user_id'].nunique()
-    for_compare_dau = (actions.loc[(actions['created_at'] > timestamp.two_days)
-                                   & (actions['created_at'] < timestamp.yesterday)]['user_id'].nunique())
+    for_compare_dau = actions.loc[(actions['created_at'] > timestamp.two_days)
+                                  & (actions['created_at'] < timestamp.yesterday)]['user_id'].nunique()
 
     extensions = actions.loc[(actions['created_at'] >= timestamp.yesterday) &
                              (actions['url'] == 'Breathhh extension page launch')]
@@ -60,9 +60,8 @@ def breathhh_day():
                                   (actions['url'] == 'Breathhh extension page launch')] \
         .groupby('user_id')['url'].count().describe()['50%']
 
-    utp_day = (actions.loc[actions['created_at'] > timestamp.yesterday]['url']
-               .value_counts().reset_index()['index'].iloc[:5]
-               .to_string(index=False).replace('\n', ','))
+    utp_day = (actions.loc[actions['created_at'] > timestamp.yesterday]['url'].value_counts().reset_index()['index']
+               .iloc[:5].to_string(index=False).replace('\n', ','))
     utp_day = " ".join(utp_day.split())
 
     client.chat_postMessage(channel=channel_id,
@@ -89,8 +88,8 @@ def breathhh_week():
     data = request.form
     channel_id = data.get('channel_id')
     current_wau = actions.loc[actions['updated_at'] > timestamp.week]['user_id'].nunique()
-    for_compare_wau = (actions.loc[(actions['created_at'] > timestamp.two_week)
-                                   & (actions['created_at'] < timestamp.week)]['user_id'].nunique())
+    for_compare_wau = actions.loc[(actions['created_at'] > timestamp.two_week)
+                                  & (actions['created_at'] < timestamp.week)]['user_id'].nunique()
 
     extensions = actions.loc[(actions['created_at'] >= timestamp.week) &
                              (actions['url'] == 'Breathhh extension page launch')]
@@ -100,9 +99,8 @@ def breathhh_week():
                                   (actions['url'] == 'Breathhh extension page launch')] \
         .groupby('user_id')['url'].count().describe()['50%']
 
-    utp_week = (actions.loc[actions['created_at'] > timestamp.week]['url']
-                .value_counts().reset_index()['index'].iloc[:5]
-                .to_string(index=False).replace('\n', ','))
+    utp_week = (actions.loc[actions['created_at'] > timestamp.week]['url'].value_counts().reset_index()['index']
+                .iloc[:5].to_string(index=False).replace('\n', ','))
     utp_week = " ".join(utp_week.split())
 
     client.chat_postMessage(channel=channel_id,
@@ -130,8 +128,8 @@ def breathhh_month():
     channel_id = data.get('channel_id')
 
     current_mau = actions.loc[actions['updated_at'] > timestamp.month]['user_id'].nunique()
-    for_compare = (actions.loc[(actions['created_at'] > timestamp.two_month)
-                               & (actions['created_at'] < timestamp.month)]['user_id'].nunique())
+    for_compare = actions.loc[(actions['created_at'] > timestamp.two_month)
+                              & (actions['created_at'] < timestamp.month)]['user_id'].nunique()
 
     extensions = actions.loc[(actions['created_at'] >= timestamp.month) &
                              (actions['url'] == 'Breathhh extension page launch')]
@@ -141,9 +139,8 @@ def breathhh_month():
                                   (actions['url'] == 'Breathhh extension page launch')] \
         .groupby('user_id')['url'].count().describe()['50%']
 
-    utp_month = (actions.loc[actions['created_at'] > timestamp.month]['url']
-                 .value_counts().reset_index()['index'].iloc[:5]
-                 .to_string(index=False).replace('\n', ','))
+    utp_month = (actions.loc[actions['created_at'] > timestamp.month]['url'].value_counts().reset_index()['index']
+                 .iloc[:5].to_string(index=False).replace('\n', ','))
     utp_month = " ".join(utp_month.split())
 
     client.chat_postMessage(channel=channel_id,
@@ -182,12 +179,12 @@ def breathhh():
                             text='*Breathhh*'
                                  f'\n Period: All time \n'
                                  f'\n Metric: Total users'
-                                 f'\n Value: {total_users_reg}\n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 посещенных сайтов'
-                                 f'\n Urls: \n {utp} \n'
+                                 f'\n Value: {total_users_reg}\n'                                
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 f'\n Value: {extensions} ')
+                                 f'\n Value: {extensions} \n'
+                                 '\n Metric: Urls Top-5'
+                                 '\n Description: Топ 5 посещенных сайтов'
+                                 f'\n Urls: \n {utp} ')
 
     return Response(), 200
