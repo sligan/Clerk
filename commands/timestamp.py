@@ -45,7 +45,7 @@ def compare(x, y):
         elif z > 0:
             return f'▲ +{floor(z)}% at previous'
         else:
-            return 'error'
+            return '0 at previous'
     except ZeroDivisionError:
         return 'Еще не было пользователей за прошлый'
 
