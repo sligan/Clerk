@@ -1,22 +1,10 @@
+import os
 from flask import request, Response
 from db_connect import get_users, get_actions
 from datetime import datetime
 from main import app, client
 from commands import timestamp
-from math import floor
-
-
-def compare(x, y):
-    try:
-        z = x / y * 100 - 100
-        if z < 0:
-            return f'▼ {floor(z)}% at previous'
-        elif z == 0:
-            return '0% change at previous'
-        else:
-            return f'▲ +{floor(z)}% at previous'
-    except ZeroDivisionError:
-        return 'Еще не было пользователей за прошлый'
+import schedule
 
 
 @app.route('/users-total', methods=['POST'])
@@ -70,11 +58,11 @@ def breathhh_day():
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Metric: Daily Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_dau} ({compare(current_dau, for_compare_dau)} day) \n'
+                                 f'\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)} day) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_day} ({compare(ext_by_day, for_compare_ext)} day)\n'
+                                 f'\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)} day)\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_day}')
@@ -84,36 +72,20 @@ def breathhh_day():
 
 @app.route('/breathhh-week', methods=['POST'])
 def breathhh_week():
-    actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-    current_wau = actions.loc[actions['updated_at'] > timestamp.week]['user_id'].nunique()
-    for_compare_wau = actions.loc[(actions['created_at'] > timestamp.two_week)
-                                  & (actions['created_at'] < timestamp.week)]['user_id'].nunique()
-
-    extensions = actions.loc[(actions['created_at'] >= timestamp.week) &
-                             (actions['url'] == 'Breathhh extension page launch')]
-    ext_by_week = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamp.two_week) &
-                                  (actions['created_at'] < timestamp.week) &
-                                  (actions['url'] == 'Breathhh extension page launch')] \
-        .groupby('user_id')['url'].count().describe()['50%']
-
-    utp_week = (actions.loc[actions['created_at'] > timestamp.week]['url'].value_counts().reset_index()['index']
-                .iloc[:5].to_string(index=False).replace('\n', ','))
-    utp_week = " ".join(utp_week.split())
-
+    current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh*'
                                  f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  f'\n Metric: Weekly Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_wau} ({compare(current_wau, for_compare_wau)} week) \n'
+                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_week} ({compare(ext_by_week, for_compare_ext)} week)\n'
+                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)} week)\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_week}')
@@ -149,11 +121,11 @@ def breathhh_month():
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  f'\n Metric: Monthly Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_mau} ({compare(current_mau, for_compare)} month) \n'
+                                 f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_month} ({compare(ext_by_month, for_compare_ext)} month)\n'
+                                 f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)} month)\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_month}')
@@ -179,7 +151,7 @@ def breathhh():
                             text='*Breathhh*'
                                  f'\n Period: All time \n'
                                  f'\n Metric: Total users'
-                                 f'\n Value: {total_users_reg}\n'                                
+                                 f'\n Value: {total_users_reg}\n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  f'\n Value: {extensions} \n'
@@ -188,3 +160,24 @@ def breathhh():
                                  f'\n Urls: \n {utp} ')
 
     return Response(), 200
+
+
+def weekly_report():
+    current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
+    client.chat_postMessage(channel=os.getenv('CHANNEL'),
+                            text='*Breathhh*'
+                                 f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
+                                 f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                 f'\n Metric: Weekly Active Users'
+                                 '\n Description: Активные пользователи'
+                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
+                                 '\n Metric: Daily Breath Rate'
+                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
+                                 ' за текущий период'
+                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)} week)\n'
+                                 '\n Metric: Urls Top-5'
+                                 '\n Description: Топ 5 популярных сайтов'
+                                 f'\n Urls: \n {utp_week} ')
+
+
+schedule.every().sunday.at('23:59').do(weekly_report)
