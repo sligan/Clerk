@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import commands.breathhh
 from db_connect import get_actions
 import schedule
 import threading
@@ -35,6 +34,26 @@ def weekly():
     return current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week
 
 
+def monthly():
+    actions = get_actions()
+    current_mau = actions.loc[actions['updated_at'] > month]['user_id'].nunique()
+    for_compare = actions.loc[(actions['created_at'] > two_month)
+                              & (actions['created_at'] < month)]['user_id'].nunique()
+
+    extensions = actions.loc[(actions['created_at'] >= month) &
+                             (actions['url'] == 'Breathhh extension page launch')]
+    ext_by_month = extensions.groupby('user_id')['url'].count().describe()['50%']
+    for_compare_ext = actions.loc[(actions['created_at'] > two_month) &
+                                  (actions['created_at'] < month) &
+                                  (actions['url'] == 'Breathhh extension page launch')] \
+        .groupby('user_id')['url'].count().describe()['50%']
+
+    utp_month = (actions.loc[actions['created_at'] > month]['url'].value_counts().reset_index()['index']
+                 .iloc[:5].to_string(index=False).replace('\n', ','))
+    utp_month = " ".join(utp_month.split())
+    return current_mau, for_compare, ext_by_month, for_compare_ext, utp_month
+
+
 def compare(x, y):
     try:
         z = x / y * 100 - 100
@@ -66,4 +85,3 @@ def run_continuously(interval=1):
 
 
 stop_run_continuously = run_continuously()
-

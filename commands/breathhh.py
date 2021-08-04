@@ -23,10 +23,10 @@ def help_clerk():
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
                             text='*Commands*:  \n'
+                                 '/breathhh - показатели за всё время \n'
                                  '/breathhh-day - показатели за день \n'
                                  '/breathhh-week - показатели за неделю \n'
-                                 '/breathhh-month - показатели за месяц \n'
-                                 '/breathhh - показатели за всё время')
+                                 '/breathhh-month - показатели за месяц \n')
     return Response(), 200
 
 
@@ -95,26 +95,9 @@ def breathhh_week():
 
 @app.route('/breathhh-month', methods=['POST'])
 def breathhh_month():
-    actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-
-    current_mau = actions.loc[actions['updated_at'] > timestamp.month]['user_id'].nunique()
-    for_compare = actions.loc[(actions['created_at'] > timestamp.two_month)
-                              & (actions['created_at'] < timestamp.month)]['user_id'].nunique()
-
-    extensions = actions.loc[(actions['created_at'] >= timestamp.month) &
-                             (actions['url'] == 'Breathhh extension page launch')]
-    ext_by_month = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamp.two_month) &
-                                  (actions['created_at'] < timestamp.month) &
-                                  (actions['url'] == 'Breathhh extension page launch')] \
-        .groupby('user_id')['url'].count().describe()['50%']
-
-    utp_month = (actions.loc[actions['created_at'] > timestamp.month]['url'].value_counts().reset_index()['index']
-                 .iloc[:5].to_string(index=False).replace('\n', ','))
-    utp_month = " ".join(utp_month.split())
-
+    current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh*'
                                  f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
@@ -180,4 +163,26 @@ def weekly_report():
                                  f'\n Urls: \n {utp_week} ')
 
 
-schedule.every().sunday.at('23:59').do(weekly_report)
+def monthly_report():
+    if datetime.today().day == 1:
+        current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
+        client.chat_postMessage(channel=os.getenv('CHANNEL'),
+                                text='*Breathhh*'
+                                     f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
+                                     f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                     f'\n Metric: Monthly Active Users'
+                                     '\n Description: Активные пользователи'
+                                     f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
+                                     '\n Metric: Daily Breath Rate'
+                                     '\n Description: Среднее количество показов тренажера дыхания для каждого '
+                                     'пользователя '
+                                     ' за текущий период'
+                                     f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)} '
+                                     'month)\n '
+                                     '\n Metric: Urls Top-5'
+                                     '\n Description: Топ 5 популярных сайтов'
+                                     f'\n Urls: \n {utp_month}')
+
+
+schedule.every().sunday.at('20:59').do(weekly_report)
+schedule.every().day.at('21:00').do(monthly_report)
