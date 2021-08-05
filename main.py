@@ -12,6 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 client = slack.WebClient(token=os.getenv('TOKEN'))
 slack_event_adapter = SlackEventAdapter(os.getenv('SECRET'), '/slack/events', app)
+scopes = ['https://www.googleapis.com/auth/analytics.readonly']
+key_file_loc = os.getenv('GA_KEY_LOC')
+view_id = os.getenv('GA_VIEW_ID')
 
 
 @app.before_first_request

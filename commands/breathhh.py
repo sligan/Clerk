@@ -1,10 +1,16 @@
 import os
+import schedule
+import main
 from flask import request, Response
 from db_connect import get_users, get_actions
 from datetime import datetime
 from main import app, client
 from commands import timestamp
-import schedule
+from googleapiclient.discovery import build
+from oauth2client.service_account import ServiceAccountCredentials
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name(main.key_file_loc, main.scopes)
+analytics = build('analyticsreporting', 'v4', credentials=credentials)
 
 
 @app.route('/users-total', methods=['POST'])
@@ -53,19 +59,22 @@ def breathhh_day():
     utp_day = " ".join(utp_day.split())
 
     client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh*'
-                                 f'\n Period: Day ({(timestamp.yesterday.strftime("%d " + "%B"))}'
-                                 f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 '\n Metric: Daily Active Users'
-                                 '\n Description: Активные пользователи'
-                                 f'\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)} day) \n'
-                                 '\n Metric: Daily Breath Rate'
-                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 ' за текущий период'
-                                 f'\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)} day)\n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 популярных сайтов'
-                                 f'\n Urls: \n {utp_day}')
+                            text="*Breathhh*"
+                                 f"\n Period: Day ({(timestamp.yesterday.strftime('%d ' + '%B'))}"
+                                 f" - {datetime.today().strftime('%d ' + '%B')}) \n"
+                                 "\n Metric: Landing Users"
+                                 "\n Description: Количество уникальных посещений лендинга"
+                                 f"\n Value: {ga_metrics('1daysAgo', 'ga:newUsers')} \n"
+                                 "\n Metric: Daily Active Users"
+                                 "\n Description: Активные пользователи"
+                                 f"\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)} day) \n"
+                                 "\n Metric: Daily Breath Rate"
+                                 "\n Description: Среднее количество показов тренажера дыхания для каждого пользователя"
+                                 " за текущий период"
+                                 f"\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)} day)\n"
+                                 "\n Metric: Urls Top-5"
+                                 "\n Description: Топ 5 популярных сайтов"
+                                 f"\n Urls: \n {utp_day}")
 
     return Response(), 200
 
@@ -79,6 +88,9 @@ def breathhh_week():
                             text='*Breathhh*'
                                  f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                 "\n Metric: Users Sessions"
+                                 "\n Description: Количество уникальных посещений лендинга"
+                                 f"\n Value: {ga_metrics('7daysAgo', 'ga:newUsers')} \n"
                                  f'\n Metric: Weekly Active Users'
                                  '\n Description: Активные пользователи'
                                  f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
@@ -102,6 +114,9 @@ def breathhh_month():
                             text='*Breathhh*'
                                  f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                 "\n Metric: Landing Users"
+                                 "\n Description: Количество уникальных посещений лендинга"
+                                 f"\n Value: {ga_metrics('30daysAgo', 'ga:newUsers')} \n"
                                  f'\n Metric: Monthly Active Users'
                                  '\n Description: Активные пользователи'
                                  f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
@@ -133,6 +148,9 @@ def breathhh():
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh*'
                                  f'\n Period: All time \n'
+                                 "\n Metric: Landing Users"
+                                 "\n Description: Количество уникальных посещений лендинга"
+                                 f"\n Value: {ga_metrics('2021-01-01', 'ga:newUsers')} \n"
                                  f'\n Metric: Total users'
                                  f'\n Value: {total_users_reg}\n'
                                  '\n Metric: Daily Breath Rate'
@@ -151,6 +169,9 @@ def weekly_report():
                             text='*Breathhh*'
                                  f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                 "\n Metric: Landing Users"
+                                 "\n Description: Количество уникальных посещений лендинга"
+                                 f"\n Value: {ga_metrics('7daysAgo', 'ga:newUsers')} \n"
                                  f'\n Metric: Weekly Active Users'
                                  '\n Description: Активные пользователи'
                                  f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
@@ -170,6 +191,9 @@ def monthly_report():
                                 text='*Breathhh*'
                                      f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
                                      f' - {datetime.today().strftime("%d " + "%B")}) \n'
+                                     "\n Metric: Landing Users"
+                                     "\n Description: Количество уникальных посещений лендинга"
+                                     f"\n Value: {ga_metrics('30daysAgo', 'ga:newUsers')} \n"
                                      f'\n Metric: Monthly Active Users'
                                      '\n Description: Активные пользователи'
                                      f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
@@ -182,6 +206,21 @@ def monthly_report():
                                      '\n Metric: Urls Top-5'
                                      '\n Description: Топ 5 популярных сайтов'
                                      f'\n Urls: \n {utp_month}')
+
+
+def ga_metrics(startDate, metrics):
+    response = analytics.reports().batchGet(
+        body=dict(reportRequests=[dict(viewId=main.view_id,
+                                       dateRanges=[{'startDate': startDate, 'endDate': 'today'}],
+                                       metrics=[{'expression': metrics}])])).execute()
+    for report in response.get('reports', []):
+        columnheader = report.get('columnHeader', {})
+        metricheaders = columnheader.get('metricHeader', {}).get('metricHeaderEntries', [])
+        for row in report.get('data', {}).get('rows', []):
+            daterangevalues = row.get('metrics', [])
+            for i, values in enumerate(daterangevalues):
+                for metricheaders, value in zip(metricheaders, values.get('values')):
+                    return value
 
 
 schedule.every().sunday.at('20:59').do(weekly_report)
