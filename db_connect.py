@@ -38,3 +38,25 @@ def get_users(query="""SELECT * FROM users"""):
         columns.append(col[0])
     df = pd.DataFrame(result, columns=columns)
     return df
+
+
+def lassie_connection():
+    conn = psycopg2.connect(database=os.getenv('DB_LASSIE'),
+                            user=os.getenv('USER_LASSIE'),
+                            password=os.getenv('PASS_LASSIE'),
+                            host=os.getenv('HOST_LASSIE'),
+                            port=os.getenv('PORT_LASSIE'))
+    cursor = conn.cursor()
+    return cursor, conn
+
+
+def lessie_get_users(query="""SELECT * FROM users"""):
+    cursor, conn = lassie_connection()
+    cursor.execute(query)
+    result = cursor.fetchall()
+    conn.close()
+    columns = []
+    for col in cursor.description:
+        columns.append(col[0])
+    df = pd.DataFrame(result, columns=columns)
+    return df
