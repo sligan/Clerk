@@ -62,11 +62,11 @@ def breathhh_day():
                                  f"\n Value: {ga_metrics('1daysAgo', 'ga:users')} \n"
                                  "\n Metric: Daily Active Users"
                                  "\n Description: Активные пользователи"
-                                 f"\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)} day) \n"
+                                 f"\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)}) \n"
                                  "\n Metric: Daily Breath Rate"
                                  "\n Description: Среднее количество показов тренажера дыхания для каждого пользователя"
                                  " за текущий период"
-                                 f"\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)} day)\n"
+                                 f"\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)})\n"
                                  "\n Metric: Urls Top-5"
                                  "\n Description: Топ 5 популярных сайтов"
                                  f"\n Urls: \n {utp_day}")
@@ -88,11 +88,11 @@ def breathhh_week():
                                  f"\n Value: {ga_metrics('7daysAgo', 'ga:users')} \n"
                                  f'\n Metric: Weekly Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
+                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)}) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)} week)\n'
+                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)})\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_week}')
@@ -114,11 +114,11 @@ def breathhh_month():
                                  f"\n Value: {ga_metrics('30daysAgo', 'ga:users')} \n"
                                  f'\n Metric: Monthly Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
+                                 f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)}) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)} month)\n'
+                                 f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)})\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_month}')
@@ -169,11 +169,11 @@ def weekly_report():
                                  f"\n Value: {ga_metrics('7daysAgo', 'ga:users')} \n"
                                  f'\n Metric: Weekly Active Users'
                                  '\n Description: Активные пользователи'
-                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)} week) \n'
+                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)}) \n'
                                  '\n Metric: Daily Breath Rate'
                                  '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
                                  ' за текущий период'
-                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)} week)\n'
+                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)})\n'
                                  '\n Metric: Urls Top-5'
                                  '\n Description: Топ 5 популярных сайтов'
                                  f'\n Urls: \n {utp_week} ')
@@ -191,13 +191,13 @@ def monthly_report():
                                      f"\n Value: {ga_metrics('30daysAgo', 'ga:users')} \n"
                                      f'\n Metric: Monthly Active Users'
                                      '\n Description: Активные пользователи'
-                                     f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)} month) \n'
+                                     f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)}) \n'
                                      '\n Metric: Daily Breath Rate'
                                      '\n Description: Среднее количество показов тренажера дыхания для каждого '
                                      'пользователя '
                                      ' за текущий период'
                                      f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)} '
-                                     'month)\n '
+                                     ')\n '
                                      '\n Metric: Urls Top-5'
                                      '\n Description: Топ 5 популярных сайтов'
                                      f'\n Urls: \n {utp_month}')
