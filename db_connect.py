@@ -50,7 +50,7 @@ def lassie_connection():
     return cursor, conn
 
 
-def lessie_get_users(query="""SELECT * FROM users"""):
+def lessie_get(query="""SELECT * FROM users"""):
     cursor, conn = lassie_connection()
     cursor.execute(query)
     result = cursor.fetchall()
