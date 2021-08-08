@@ -58,15 +58,26 @@ def compare(x, y):
     try:
         z = x / y * 100 - 100
         if z < 0:
-            return f'▼ {floor(z)}% at previous'
+            return f'▼ {floor(z)}% at previous period'
         elif z == 0:
             return '0% change at previous'
         elif z > 0:
-            return f'▲ +{floor(z)}% at previous'
+            return f'▲ +{floor(z)}% at previous period'
         else:
-            return '0 at previous'
+            return '0 at previous period'
     except ZeroDivisionError:
-        return 'Еще не было пользователей за прошлый'
+        return 'Не было пользователей за прошлый период'
+
+
+def compare2_0(lower, higher):
+    try:
+        z = int(lower) / int(higher) * 100
+        if z == 0:
+            return '0%'
+        elif z > 0:
+            return f'{floor(z)}%'
+    except ZeroDivisionError:
+        return 'Нет данных'
 
 
 def run_continuously(interval=1):
