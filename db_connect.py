@@ -16,6 +16,26 @@ def breathhh_connection():
     return cursor, conn
 
 
+def lassie_connection():
+    conn = psycopg2.connect(database=os.getenv('DB_LASSIE'),
+                            user=os.getenv('USER_LASSIE'),
+                            password=os.getenv('PASS_LASSIE'),
+                            host=os.getenv('HOST_LASSIE'),
+                            port=os.getenv('PORT_LASSIE'))
+    cursor = conn.cursor()
+    return cursor, conn
+
+
+def alpaca_connection():
+    conn = psycopg2.connect(database=os.getenv('DB_ALPACA'),
+                            user=os.getenv('USER_ALPACA'),
+                            password=os.getenv('PASS_ALPACA'),
+                            host=os.getenv('HOST_ALPACA'),
+                            port=os.getenv('PORT_ALPACA'))
+    cursor = conn.cursor()
+    return cursor, conn
+
+
 def get_actions(query="""SELECT * FROM actions"""):
     cursor, conn = breathhh_connection()
     cursor.execute(query)
@@ -40,17 +60,19 @@ def get_users(query="""SELECT * FROM users"""):
     return df
 
 
-def lassie_connection():
-    conn = psycopg2.connect(database=os.getenv('DB_LASSIE'),
-                            user=os.getenv('USER_LASSIE'),
-                            password=os.getenv('PASS_LASSIE'),
-                            host=os.getenv('HOST_LASSIE'),
-                            port=os.getenv('PORT_LASSIE'))
-    cursor = conn.cursor()
-    return cursor, conn
+def lassie_get(query="""SELECT * FROM users"""):
+    cursor, conn = lassie_connection()
+    cursor.execute(query)
+    result = cursor.fetchall()
+    conn.close()
+    columns = []
+    for col in cursor.description:
+        columns.append(col[0])
+    df = pd.DataFrame(result, columns=columns)
+    return df
 
 
-def lessie_get(query="""SELECT * FROM users"""):
+def alpaca_get(query="""SELECT * FROM users"""):
     cursor, conn = lassie_connection()
     cursor.execute(query)
     result = cursor.fetchall()
