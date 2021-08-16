@@ -6,6 +6,9 @@ from db_connect import get_users, get_actions
 from datetime import datetime
 from main import app, client
 from commands import timestamp
+from dotenv import load_dotenv
+load_dotenv()
+
 
 
 @app.route('/breathhh-users-total', methods=['POST'])

@@ -1,9 +1,12 @@
 import main
+import os
 from flask import request, Response
 from db_connect import lassie_get
 from datetime import datetime
 from main import app, client
 from commands import timestamp
+from dotenv import load_dotenv
+load_dotenv()
 
 
 @app.route('/lassie-users-total', methods=['POST'])
