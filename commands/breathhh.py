@@ -1,4 +1,5 @@
 import os
+import requests
 import schedule
 import main
 from flask import request, Response
@@ -217,6 +218,11 @@ def ga_metrics(startDate, metrics):
                 for metricheaders, value in zip(metricheaders, values.get('values')):
                     return value
 
+
+def bmc():
+    auth = {'Authorization': os.getenv('BMC_TOKEN')}
+    response = requests.get('https://developers.buymeacoffee.com/api/v1/extras', headers=auth)
+    print(response.json())
 
 schedule.every().sunday.at('20:59').do(weekly_report)
 schedule.every().day.at('21:00').do(monthly_report)

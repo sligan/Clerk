@@ -18,9 +18,9 @@ scopes = ['https://www.googleapis.com/auth/analytics.readonly']
 key_file_loc = os.getenv('GA_KEY_LOC')
 view_id_breathhh = os.getenv('GA_VIEW_ID_BREATHHH')
 view_id_lassie = os.getenv('GA_VIEW_ID_LESSIE')
+view_id_alpaca = os.getenv('GA_VIEW_ID_ALPACA')
 credentials = ServiceAccountCredentials.from_json_keyfile_name(key_file_loc, scopes)
 analytics = build('analyticsreporting', 'v4', credentials=credentials)
-
 
 @app.before_first_request
 def init_rollbar():

@@ -73,7 +73,7 @@ def lassie_get(query="""SELECT * FROM users"""):
 
 
 def alpaca_get(query="""SELECT * FROM users"""):
-    cursor, conn = lassie_connection()
+    cursor, conn = alpaca_connection()
     cursor.execute(query)
     result = cursor.fetchall()
     conn.close()

@@ -16,17 +16,18 @@ def Alpaca_day():
     # uninstall_rate =
     pass
 
-@app.route('/Alpaca-day', methods=['POST'])
+
+@app.route('/Alpaca-week', methods=['POST'])
 def Alpaca_week():
     pass
 
 
-@app.route('/Alpaca-day', methods=['POST'])
+@app.route('/Alpaca-month', methods=['POST'])
 def Alpaca_month():
     pass
 
 
-@app.route('/Alpaca-day', methods=['POST'])
+@app.route('/Alpaca', methods=['POST'])
 def Alpaca():
     pass
 

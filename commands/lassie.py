@@ -76,9 +76,9 @@ def lassie():
     client.chat_postMessage(channel=channel_id,
                             text="*Lassie Smoke*"
                                  f"\n Period: All time \n"
-                            '\n Metric: Total Users'
-                            '\n Description: Суммарное количество пользователей'
-                            f'\n Value: {total_users[0]["count"]}\n')
+                                 '\n Metric: Total Users'
+                                 '\n Description: Суммарное количество пользователей'
+                                 f'\n Value: {total_users[0]["count"]}\n')
 
 
 def lessie_ga_metrics(startDate, metrics):
