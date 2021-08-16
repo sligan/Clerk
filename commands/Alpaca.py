@@ -34,7 +34,7 @@ def Alpaca():
 
 def alpaca_ga_metrics(startDate, metrics):
     response = main.analytics.reports().batchGet(
-        body=dict(reportRequests=[dict(viewId=main.view_id_alpaca,
+        body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_ALPACA'),
                                        dateRanges=[{'startDate': startDate, 'endDate': 'today'}],
                                        metrics=[{'expression': metrics}])])).execute()
     for report in response.get('reports', []):

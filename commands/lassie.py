@@ -83,7 +83,7 @@ def lassie():
 
 def lessie_ga_metrics(startDate, metrics):
     response = main.analytics.reports().batchGet(
-        body=dict(reportRequests=[dict(viewId=main.view_id_lassie,
+        body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_LESSIE'),
                                        dateRanges=[{'startDate': startDate, 'endDate': 'today'}],
                                        metrics=[{'expression': metrics}])])).execute()
     for report in response.get('reports', []):
