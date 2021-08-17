@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-
 @app.route('/breathhh-users-total', methods=['POST'])
 def users_total():
     users = get_users()
