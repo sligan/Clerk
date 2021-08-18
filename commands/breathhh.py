@@ -26,7 +26,7 @@ def help_clerk():
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
                             text='*Commands*:  \n'
-                                 '/breathhh - показатели за всё время \n'
+                                 '/breathhh-all - показатели за всё время \n'
                                  '/breathhh-day - показатели за день \n'
                                  '/breathhh-week - показатели за неделю \n'
                                  '/breathhh-month - показатели за месяц \n')
@@ -127,8 +127,8 @@ def breathhh_month():
     return Response(), 200
 
 
-@app.route('/breathhh', methods=['POST'])
-def breathhh():
+@app.route('/breathhh-all', methods=['POST'])
+def breathhh_all():
     users = get_users()
     actions = get_actions()
     data = request.form
