@@ -77,7 +77,9 @@ def compare2_0(lower, higher):
         elif z > 0:
             return f'{floor(z)}%'
     except ZeroDivisionError:
-        return 'Нет данных'
+        return '0%'
+    except TypeError:
+        return '0%'
 
 
 def run_continuously(interval=1):
