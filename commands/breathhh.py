@@ -25,11 +25,20 @@ def help_clerk():
     data = request.form
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
-                            text='*Commands*:  \n'
+                            text='*Commands*:  \n'                               
+                                 '/lassie-all - показатели за всё время \n'
+                                 '/lassie-day - показатели за день \n'
+                                 '/lassie-week - показатели за неделю \n'
+                                 '/lassie-month - показатели за месяц \n'
                                  '/breathhh-all - показатели за всё время \n'
                                  '/breathhh-day - показатели за день \n'
                                  '/breathhh-week - показатели за неделю \n'
-                                 '/breathhh-month - показатели за месяц \n')
+                                 '/breathhh-month - показатели за месяц \n'
+                                 '/donations-all - показатели за всё время \n'
+                                 '/donations-day - показатели за день \n'
+                                 '/donations-week - показатели за неделю \n'
+                                 '/donations-month - показатели за месяц \n')
+
     return Response(), 200
 
 

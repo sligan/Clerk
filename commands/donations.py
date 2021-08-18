@@ -8,8 +8,8 @@ from datetime import datetime
 load_dotenv()
 
 
-@app.route('/Donations-day', methods=['POST'])
-def business_day():
+@app.route('/donations-day', methods=['POST'])
+def donations_day():
     data = request.form
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
@@ -22,7 +22,7 @@ def business_day():
 
 
 @app.route('/Donations-week', methods=['POST'])
-def business_week():
+def donations_week():
     data = request.form
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
@@ -35,7 +35,7 @@ def business_week():
 
 
 @app.route('/Donations-month', methods=['POST'])
-def business_month():
+def donations_month():
     data = request.form
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
@@ -44,6 +44,18 @@ def business_month():
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Buy Me a Coffee donations:'
                                  f'\n Value: {bmc(timestamps=timestamp.month)}$')
+    return Response(), 200
+
+
+@app.route('/Donations-all', methods=['POST'])
+def donations_all():
+    data = request.form
+    channel_id = data.get('channel_id')
+    client.chat_postMessage(channel=channel_id,
+                            text='*Donations*'
+                                 f"\n Period: All time \n"
+                                 '\n Buy Me a Coffee donations:'
+                                 f'\n Value: {bmc(timestamps=timestamp.start_2021)}$')
     return Response(), 200
 
 

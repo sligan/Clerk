@@ -119,8 +119,8 @@ def lassie_month():
     return Response(), 200
 
 
-@app.route('/lassie', methods=['POST'])
-def lassie():
+@app.route('/lassie-all', methods=['POST'])
+def lassie_all():
     data = request.form
     channel_id = data.get('channel_id')
     total_users = lassie_get(query="select count(distinct(id)) from users")

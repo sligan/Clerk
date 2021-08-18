@@ -12,6 +12,7 @@ week = datetime.today() - timedelta(days=7)
 two_week = datetime.today() - timedelta(days=14)
 month = datetime.today() - timedelta(days=30)
 two_month = datetime.today() - timedelta(days=60)
+start_2021 = datetime.strptime('2021-01-01', '%Y-%m-%d')
 
 
 def weekly():
