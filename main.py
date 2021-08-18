@@ -28,5 +28,5 @@ def init_rollbar():
 if __name__ == '__main__':
     from commands.breathhh import *
     from commands.lassie import *
-    from commands.business import *
+    from commands.donations import *
     app.run(port=os.getenv('PORT'))
