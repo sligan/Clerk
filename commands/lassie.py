@@ -32,7 +32,7 @@ def lassie_day():
 
     client.chat_postMessage(channel=channel_id,
                             text="*Lassie Smoke*"
-                                 f"\n Period: Day ({(timestamp.yesterday.strftime('%d ' + '%B'))}"
+                                 f"\n Period: Day ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
                                  f" - {datetime.today().strftime('%d ' + '%B')}) \n"
                                  '\n Metric: Landing Users'
                                  '\n Description: Количество сессий по лендингу'
@@ -66,7 +66,7 @@ def lassie_week():
 
     client.chat_postMessage(channel=channel_id,
                             text="*Lassie Smoke*"
-                                 f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
+                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Metric: Landing Users'
                                  '\n Description: Количество сессий по лендингу'
@@ -99,7 +99,7 @@ def lassie_month():
 
     client.chat_postMessage(channel=channel_id,
                             text="*Lassie Smoke*"
-                                 f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
+                                 f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Metric: Landing Users'
                                  '\n Description: Количество сессий по лендингу'
@@ -167,7 +167,8 @@ def aha(days_count):
 
 
 def retention():
-    return lassie_get(query="WITH count_smoke AS (SELECT user_id FROM smoking_actions GROUP BY user_id "
-                            "HAVING count(smoke_at) > 3) SELECT count(distinct id) FROM users "
-                            "JOIN count_smoke ON count_smoke.user_id = users.id "
+    return lassie_get(query="WITH count_smoke AS (SELECT user_id FROM smoking_actions "
+                            "WHERE smoke_at > now() - interval '1 days' GROUP BY user_id "
+                            "HAVING count(smoke_at) > 3) SELECT count(distinct id) "
+                            "FROM users JOIN count_smoke ON count_smoke.user_id = users.id "
                             "WHERE users.created_at between now() - interval '3 days' and now() - interval '2 days'")

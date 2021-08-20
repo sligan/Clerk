@@ -48,25 +48,25 @@ def breathhh_day():
     data = request.form
     channel_id = data.get('channel_id')
 
-    current_dau = actions.loc[actions['updated_at'] > timestamp.yesterday]['user_id'].nunique()
-    for_compare_dau = actions.loc[(actions['created_at'] > timestamp.two_days)
-                                  & (actions['created_at'] < timestamp.yesterday)]['user_id'].nunique()
+    current_dau = actions.loc[actions['updated_at'] > timestamp.timestamps(1)]['user_id'].nunique()
+    for_compare_dau = actions.loc[(actions['created_at'] > timestamp.timestamps(2))
+                                  & (actions['created_at'] < timestamp.timestamps(1))]['user_id'].nunique()
 
-    extensions = actions.loc[(actions['created_at'] >= timestamp.yesterday) &
+    extensions = actions.loc[(actions['created_at'] >= timestamp.timestamps(1)) &
                              (actions['url'] == 'Breathhh extension page launch')]
     ext_by_day = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamp.two_days) &
-                                  (actions['created_at'] < timestamp.yesterday) &
+    for_compare_ext = actions.loc[(actions['created_at'] > timestamp.timestamps(2)) &
+                                  (actions['created_at'] < timestamp.timestamps(1)) &
                                   (actions['url'] == 'Breathhh extension page launch')] \
         .groupby('user_id')['url'].count().describe()['50%']
 
-    utp_day = (actions.loc[actions['created_at'] > timestamp.yesterday]['url'].value_counts().reset_index()['index']
+    utp_day = (actions.loc[actions['created_at'] > timestamp.timestamps(1)]['url'].value_counts().reset_index()['index']
                .iloc[:5].to_string(index=False).replace('\n', ','))
     utp_day = " ".join(utp_day.split())
 
     client.chat_postMessage(channel=channel_id,
                             text="*Breathhh*"
-                                 f"\n Period: Day ({(timestamp.yesterday.strftime('%d ' + '%B'))}"
+                                 f"\n Period: Day ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
                                  f" - {datetime.today().strftime('%d ' + '%B')}) \n"
                                  "\n Metric: Landing Users"
                                  "\n Description: Количество пользоватей посетивших Breathhh.app"
@@ -92,7 +92,7 @@ def breathhh_week():
     current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh*'
-                                 f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
+                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  "\n Metric: Users Sessions"
                                  "\n Description: Количество пользоватей посетивших Breathhh.app"
@@ -118,7 +118,7 @@ def breathhh_month():
     current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh*'
-                                 f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
+                                 f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  "\n Metric: Landing Users"
                                  "\n Description: Количество пользоватей посетивших Breathhh.app"
@@ -173,7 +173,7 @@ def weekly_report():
     current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
     client.chat_postMessage(channel=os.getenv('CHANNEL'),
                             text='*Breathhh*'
-                                 f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
+                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  "\n Metric: Landing Users"
                                  "\n Description: Количество пользоватей посетивших Breathhh.app"
@@ -195,7 +195,7 @@ def monthly_report():
         current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
         client.chat_postMessage(channel=os.getenv('CHANNEL'),
                                 text='*Breathhh*'
-                                     f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
+                                     f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
                                      f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                      "\n Metric: Landing Users"
                                      "\n Description: Количество пользоватей посетивших Breathhh.app"

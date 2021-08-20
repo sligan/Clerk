@@ -14,10 +14,10 @@ def donations_day():
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
                             text='*Donations*'
-                                 f"\n Period: Day ({(timestamp.yesterday.strftime('%d ' + '%B'))}"
+                                 f"\n Period: Day ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
                                  f" - {datetime.today().strftime('%d ' + '%B')}) \n"
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.yesterday)}$')
+                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(1))}$')
     return Response(), 200
 
 
@@ -27,10 +27,10 @@ def donations_week():
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
                             text='*Donations*'
-                                 f'\n Period: Week ({(timestamp.week.strftime("%d " + "%B"))}'
+                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.week)}$')
+                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(7))}$')
     return Response(), 200
 
 
@@ -40,10 +40,10 @@ def donations_month():
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
                             text='*Donations*'
-                                 f'\n Period: Month ({(timestamp.month.strftime("%d " + "%B"))}'
+                                 f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.month)}$')
+                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(30))}$')
     return Response(), 200
 
 
@@ -55,7 +55,7 @@ def donations_all():
                             text='*Donations*'
                                  f"\n Period: All time \n"
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.start_2021)}$')
+                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(10000))}$')
     return Response(), 200
 
 
