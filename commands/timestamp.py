@@ -52,30 +52,30 @@ def monthly():
 
 def compare(x, y):
     try:
-        z = x / y * 100 - 100
+        z = float(x) / float(y) * 100 - 100
         if z < 0:
-            return f'▼ {floor(z)}% at previous period'
+            return f'▼ {floor(z)}%'
         elif z == 0:
-            return '0% change at previous'
+            return '0%'
         elif z > 0:
-            return f'▲ +{floor(z)}% at previous period'
+            return f'▲ +{floor(z)}%'
         else:
-            return '0 at previous period'
+            return '0%'
     except ZeroDivisionError:
-        return 'Не было пользователей за прошлый период'
+        return '0%'
 
 
 def compare2_0(lower, higher):
     try:
         z = int(lower) / int(higher) * 100
         if z == 0:
-            return '0%'
+            return '0'
         elif z > 0:
-            return f'{floor(z)}%'
+            return f'{floor(z)}'
     except ZeroDivisionError:
-        return '0%'
+        return '0'
     except TypeError:
-        return '0%'
+        return '0'
 
 
 def run_continuously(interval=1):
