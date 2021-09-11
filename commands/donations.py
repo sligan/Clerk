@@ -55,7 +55,7 @@ def donations_all():
                             text='*Donations*'
                                  f"\n Period: All time \n"
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(10000))}$')
+                                 f'\n Value: {bmc(timestamps=timestamp.start_day())}$')
     return Response(), 200
 
 

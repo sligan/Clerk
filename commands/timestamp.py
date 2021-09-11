@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from db_connect import get_actions
 import schedule
 import threading
 import time
@@ -10,44 +9,10 @@ def timestamps(days):
     return datetime.today() - timedelta(days=days)
 
 
-def weekly():
-    actions = get_actions()
-    current_wau = actions.loc[actions['updated_at'] > timestamps(7)]['user_id'].nunique()
-    for_compare_wau = actions.loc[(actions['created_at'] > timestamps(14))
-                                  & (actions['created_at'] < timestamps(7))]['user_id'].nunique()
-
-    extensions = actions.loc[(actions['created_at'] >= timestamps(7)) &
-                             (actions['url'] == 'Breathhh extension page launch')]
-    ext_by_week = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamps(14)) &
-                                  (actions['created_at'] < timestamps(7)) &
-                                  (actions['url'] == 'Breathhh extension page launch')] \
-        .groupby('user_id')['url'].count().describe()['50%']
-
-    utp_week = (actions.loc[actions['created_at'] > timestamps(7)]['url'].value_counts().reset_index()['index']
-                .iloc[:5].to_string(index=False).replace('\n', ','))
-    utp_week = " ".join(utp_week.split())
-    return current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week
-
-
-def monthly():
-    actions = get_actions()
-    current_mau = actions.loc[actions['updated_at'] > timestamps(30)]['user_id'].nunique()
-    for_compare = actions.loc[(actions['created_at'] > timestamps(60))
-                              & (actions['created_at'] < timestamps(30))]['user_id'].nunique()
-
-    extensions = actions.loc[(actions['created_at'] >= timestamps(30)) &
-                             (actions['url'] == 'Breathhh extension page launch')]
-    ext_by_month = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamps(60)) &
-                                  (actions['created_at'] < timestamps(30)) &
-                                  (actions['url'] == 'Breathhh extension page launch')] \
-        .groupby('user_id')['url'].count().describe()['50%']
-
-    utp_month = (actions.loc[actions['created_at'] > timestamps(30)]['url'].value_counts().reset_index()['index']
-                 .iloc[:5].to_string(index=False).replace('\n', ','))
-    utp_month = " ".join(utp_month.split())
-    return current_mau, for_compare, ext_by_month, for_compare_ext, utp_month
+def start_day():
+    x = datetime.strptime("01/01/21", "%m/%d/%y")
+    y = datetime.today() - x
+    return y.days
 
 
 def compare(x, y):

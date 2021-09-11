@@ -36,19 +36,7 @@ def alpaca_connection():
     return cursor, conn
 
 
-def get_actions(query="""SELECT * FROM actions"""):
-    cursor, conn = breathhh_connection()
-    cursor.execute(query)
-    result = cursor.fetchall()
-    conn.close()
-    columns = []
-    for col in cursor.description:
-        columns.append(col[0])
-    df = pd.DataFrame(result, columns=columns)
-    return df
-
-
-def get_users(query="""SELECT * FROM users"""):
+def breathhh_get(query="""SELECT * FROM users"""):
     cursor, conn = breathhh_connection()
     cursor.execute(query)
     result = cursor.fetchall()

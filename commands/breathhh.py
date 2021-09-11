@@ -2,22 +2,13 @@ import os
 import schedule
 import main
 from flask import request, Response
-from db_connect import get_users, get_actions
+from db_connect import breathhh_get
 from datetime import datetime
 from main import app, client
 from commands import timestamp
 from dotenv import load_dotenv
+
 load_dotenv()
-
-
-@app.route('/breathhh-users-total', methods=['POST'])
-def users_total():
-    users = get_users()
-    data = request.form
-    channel_id = data.get('channel_id')
-    total_users = str(users['id'].count())
-    client.chat_postMessage(channel=channel_id, text=f'Breathhh users total - {total_users}')
-    return Response(), 200
 
 
 @app.route('/help', methods=['POST'])
@@ -25,7 +16,7 @@ def help_clerk():
     data = request.form
     channel_id = data.get('channel_id')
     client.chat_postMessage(channel=channel_id,
-                            text='*Commands*:  \n'                               
+                            text='*Commands*:  \n'
                                  '/lassie-all - показатели за всё время \n'
                                  '/lassie-day - показатели за день \n'
                                  '/lassie-week - показатели за неделю \n'
@@ -44,43 +35,38 @@ def help_clerk():
 
 @app.route('/breathhh-day', methods=['POST'])
 def breathhh_day():
-    actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-
-    current_dau = actions.loc[actions['updated_at'] > timestamp.timestamps(1)]['user_id'].nunique()
-    for_compare_dau = actions.loc[(actions['created_at'] > timestamp.timestamps(2))
-                                  & (actions['created_at'] < timestamp.timestamps(1))]['user_id'].nunique()
-
-    extensions = actions.loc[(actions['created_at'] >= timestamp.timestamps(1)) &
-                             (actions['url'] == 'Breathhh extension page launch')]
-    ext_by_day = extensions.groupby('user_id')['url'].count().describe()['50%']
-    for_compare_ext = actions.loc[(actions['created_at'] > timestamp.timestamps(2)) &
-                                  (actions['created_at'] < timestamp.timestamps(1)) &
-                                  (actions['url'] == 'Breathhh extension page launch')] \
-        .groupby('user_id')['url'].count().describe()['50%']
-
-    utp_day = (actions.loc[actions['created_at'] > timestamp.timestamps(1)]['url'].value_counts().reset_index()['index']
-               .iloc[:5].to_string(index=False).replace('\n', ','))
-    utp_day = " ".join(utp_day.split())
-
     client.chat_postMessage(channel=channel_id,
-                            text="*Breathhh*"
-                                 f"\n Period: Day ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
-                                 f" - {datetime.today().strftime('%d ' + '%B')}) \n"
-                                 "\n Metric: Landing Users"
-                                 "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                 f"\n Value: {ga_metrics('1daysAgo', 'ga:users')} \n"
-                                 "\n Metric: Daily Active Users"
-                                 "\n Description: Активные пользователи"
-                                 f"\n Value: {current_dau} ({timestamp.compare(current_dau, for_compare_dau)}) \n"
-                                 "\n Metric: Daily Breath Rate"
-                                 "\n Description: Среднее количество показов тренажера дыхания для каждого пользователя"
-                                 " за текущий период"
-                                 f"\n Value: {ext_by_day} ({timestamp.compare(ext_by_day, for_compare_ext)})\n"
-                                 "\n Metric: Urls Top-5"
-                                 "\n Description: Топ 5 популярных сайтов"
-                                 f"\n Urls: \n {utp_day}")
+                            text='*Breathhh*\n'
+                                 f"Period: {timestamp.timestamps(1).strftime('%d ' + '%B')} "
+                                 f"- {datetime.today().strftime('%d ' + '%B')}\n"
+                                 '\n'
+                                 '*Marketing* 📢\n'
+                                 f'User Acquisition (UA):\n'
+                                 f'Conversion to Store (CR1):\n'
+                                 f'Conversion to User (CR2):\n'
+                                 f'Bounce Rate:\n'
+                                 'K-factor Rate (Viral):\n'
+                                 '\n'
+                                 '*Product* 🍏\n'
+                                 f'New Users:\n'
+                                 f'Install Rate'
+                                 f'Onboarding Rate:\n'
+                                 f'Activation Rate:\n'
+                                 f'\n'
+                                 f'Active Users:\n'
+                                 f'Average Day 1 Retention Rate:\n'
+                                 f'Average Day 7 Retention Rate:\n'
+                                 f'\n'
+                                 f'Deleted Users Rate:\n'
+                                 f'Uninstall Rate:\n'
+                                 f'Conversion to Feedback:\n'
+                                 f'\n'
+                                 f'Breathing Simulator Relevance Rate:\n'
+                                 f'Mood Picker (Diary) Relevance Rate:\n'
+                                 f"Warm-Up's Relevance Rate:\n"
+                                 f'Background Noise Usage Rate:')
 
     return Response(), 200
 
@@ -89,24 +75,36 @@ def breathhh_day():
 def breathhh_week():
     data = request.form
     channel_id = data.get('channel_id')
-    current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
     client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh*'
-                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
-                                 f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 "\n Metric: Users Sessions"
-                                 "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                 f"\n Value: {ga_metrics('7daysAgo', 'ga:users')} \n"
-                                 f'\n Metric: Weekly Active Users'
-                                 '\n Description: Активные пользователи'
-                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)}) \n'
-                                 '\n Metric: Daily Breath Rate'
-                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 ' за текущий период'
-                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)})\n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 популярных сайтов'
-                                 f'\n Urls: \n {utp_week}')
+                            text='*Breathhh*\n'
+                                 f"Period: {timestamp.timestamps(7).strftime('%d ' + '%B')} "
+                                 f"- {datetime.today().strftime('%d ' + '%B')}\n"
+                                 '\n'
+                                 '*Marketing* 📢\n'
+                                 f'User Acquisition (UA):\n'
+                                 f'Conversion to Store (CR1):\n'
+                                 f'Conversion to User (CR2):\n'
+                                 f'Bounce Rate:\n'
+                                 'K-factor Rate (Viral):\n'
+                                 '\n'
+                                 '*Product* 🍏\n'
+                                 f'New Users:\n'
+                                 f'Install Rate'
+                                 f'Onboarding Rate:\n'
+                                 f'Activation Rate:\n'
+                                 f'\n'
+                                 f'Active Users:\n'
+                                 f'Average Day 1 Retention Rate:\n'
+                                 f'Average Day 7 Retention Rate:\n'
+                                 f'\n'
+                                 f'Deleted Users Rate:\n'
+                                 f'Uninstall Rate:\n'
+                                 f'Conversion to Feedback:\n'
+                                 f'\n'
+                                 f'Breathing Simulator Relevance Rate:\n'
+                                 f'Mood Picker (Diary) Relevance Rate:\n'
+                                 f"Warm-Up's Relevance Rate:\n"
+                                 f'Background Noise Usage Rate:')
 
     return Response(), 200
 
@@ -115,109 +113,80 @@ def breathhh_week():
 def breathhh_month():
     data = request.form
     channel_id = data.get('channel_id')
-    current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
     client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh*'
-                                 f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
-                                 f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 "\n Metric: Landing Users"
-                                 "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                 f"\n Value: {ga_metrics('30daysAgo', 'ga:users')} \n"
-                                 f'\n Metric: Monthly Active Users'
-                                 '\n Description: Активные пользователи'
-                                 f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)}) \n'
-                                 '\n Metric: Daily Breath Rate'
-                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 ' за текущий период'
-                                 f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)})\n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 популярных сайтов'
-                                 f'\n Urls: \n {utp_month}')
+                            text='*Breathhh*\n'
+                                 f"Period: {timestamp.timestamps(30).strftime('%d ' + '%B')} "
+                                 f"- {datetime.today().strftime('%d ' + '%B')}\n"
+                                 '\n'
+                                 '*Marketing* 📢\n'
+                                 f'User Acquisition (UA):\n'
+                                 f'Conversion to Store (CR1):\n'
+                                 f'Conversion to User (CR2):\n'
+                                 f'Bounce Rate:\n'
+                                 'K-factor Rate (Viral):\n'
+                                 '\n'
+                                 '*Product* 🍏\n'
+                                 f'New Users:\n'
+                                 f'Install Rate'
+                                 f'Onboarding Rate:\n'
+                                 f'Activation Rate:\n'
+                                 f'\n'
+                                 f'Active Users:\n'
+                                 f'Average Day 1 Retention Rate:\n'
+                                 f'Average Day 7 Retention Rate:\n'
+                                 f'\n'
+                                 f'Deleted Users Rate:\n'
+                                 f'Uninstall Rate:\n'
+                                 f'Conversion to Feedback:\n'
+                                 f'\n'
+                                 f'Breathing Simulator Relevance Rate:\n'
+                                 f'Mood Picker (Diary) Relevance Rate:\n'
+                                 f"Warm-Up's Relevance Rate:\n"
+                                 f'Background Noise Usage Rate:')
     return Response(), 200
 
 
 @app.route('/breathhh-all', methods=['POST'])
 def breathhh_all():
-    users = get_users()
-    actions = get_actions()
     data = request.form
     channel_id = data.get('channel_id')
-    total_users_reg = str(users['id'].count())
-
-    utp = actions['url'].value_counts().reset_index()['index'].iloc[:5]. \
-        to_string(index=False).replace('\n', ',')
-    utp = " ".join(utp.split())
-
-    extensions = actions.loc[actions['url'] == 'Breathhh extension page launch'].groupby('user_id')['url'].count() \
-        .describe()['50%']
-
     client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh*'
-                                 f'\n Period: All time \n'
-                                 "\n Metric: Landing Users"
-                                 "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                 f"\n Value: {ga_metrics('2021-01-01', 'ga:users')} \n"
-                                 f'\n Metric: Total users'
-                                 f'\n Value: {total_users_reg}\n'
-                                 '\n Metric: Daily Breath Rate'
-                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 f'\n Value: {extensions} \n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 посещенных сайтов'
-                                 f'\n Urls: \n {utp} ')
+                            text='*Breathhh*\n'
+                                 f"Period: All time\n"
+                                 '\n'
+                                 '*Marketing* 📢\n'
+                                 f'User Acquisition (UA):\n'
+                                 f'Conversion to Store (CR1):\n'
+                                 f'Conversion to User (CR2):\n'
+                                 f'Bounce Rate:\n'
+                                 'K-factor Rate (Viral):\n'
+                                 '\n'
+                                 '*Product* 🍏\n'
+                                 f'New Users:\n'
+                                 f'Install Rate'
+                                 f'Onboarding Rate:\n'
+                                 f'Activation Rate:\n'
+                                 f'\n'
+                                 f'Active Users:\n'
+                                 f'Average Day 1 Retention Rate:\n'
+                                 f'Average Day 7 Retention Rate:\n'
+                                 f'\n'
+                                 f'Deleted Users Rate:\n'
+                                 f'Uninstall Rate:\n'
+                                 f'Conversion to Feedback:\n'
+                                 f'\n'
+                                 f'Breathing Simulator Relevance Rate:\n'
+                                 f'Mood Picker (Diary) Relevance Rate:\n'
+                                 f"Warm-Up's Relevance Rate:\n"
+                                 f'Background Noise Usage Rate:')
 
     return Response(), 200
 
 
-def weekly_report():
-    current_wau, for_compare_wau, ext_by_week, for_compare_ext, utp_week = timestamp.weekly()
-    client.chat_postMessage(channel=os.getenv('CHANNEL'),
-                            text='*Breathhh*'
-                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
-                                 f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 "\n Metric: Landing Users"
-                                 "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                 f"\n Value: {ga_metrics('7daysAgo', 'ga:users')} \n"
-                                 f'\n Metric: Weekly Active Users'
-                                 '\n Description: Активные пользователи'
-                                 f'\n Value: {current_wau} ({timestamp.compare(current_wau, for_compare_wau)}) \n'
-                                 '\n Metric: Daily Breath Rate'
-                                 '\n Description: Среднее количество показов тренажера дыхания для каждого пользователя'
-                                 ' за текущий период'
-                                 f'\n Value: {ext_by_week} ({timestamp.compare(ext_by_week, for_compare_ext)})\n'
-                                 '\n Metric: Urls Top-5'
-                                 '\n Description: Топ 5 популярных сайтов'
-                                 f'\n Urls: \n {utp_week} ')
-
-
-def monthly_report():
-    if datetime.today().day == 1:
-        current_mau, for_compare, ext_by_month, for_compare_ext, utp_month = timestamp.monthly()
-        client.chat_postMessage(channel=os.getenv('CHANNEL'),
-                                text='*Breathhh*'
-                                     f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
-                                     f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                     "\n Metric: Landing Users"
-                                     "\n Description: Количество пользоватей посетивших Breathhh.app"
-                                     f"\n Value: {ga_metrics('30daysAgo', 'ga:users')} \n"
-                                     f'\n Metric: Monthly Active Users'
-                                     '\n Description: Активные пользователи'
-                                     f'\n Value: {current_mau} ({timestamp.compare(current_mau, for_compare)}) \n'
-                                     '\n Metric: Daily Breath Rate'
-                                     '\n Description: Среднее количество показов тренажера дыхания для каждого '
-                                     'пользователя '
-                                     ' за текущий период'
-                                     f'\n Value: {ext_by_month} ({timestamp.compare(ext_by_month, for_compare_ext)} '
-                                     ')\n '
-                                     '\n Metric: Urls Top-5'
-                                     '\n Description: Топ 5 популярных сайтов'
-                                     f'\n Urls: \n {utp_month}')
-
-
-def ga_metrics(startDate, metrics):
+def breathhh_ga_metrics(startDate, metrics, endDate):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_BREATHHH'),
-                                       dateRanges=[{'startDate': startDate, 'endDate': 'today'}],
+                                       dateRanges=[{'startDate': startDate, 'endDate': endDate}],
                                        metrics=[{'expression': metrics}])])).execute()
     for report in response.get('reports', []):
         columnheader = report.get('columnHeader', {})
@@ -229,5 +198,96 @@ def ga_metrics(startDate, metrics):
                     return value
 
 
-schedule.every().sunday.at('20:59').do(weekly_report)
-schedule.every().day.at('21:00').do(monthly_report)
+def breathhh_metrics(higher_date, lower_date, startDate, endDate):
+    user_acquisition = breathhh_ga_metrics(startDate=startDate, metrics="ga:newUsers", endDate=endDate)
+    conversion_to_store = 123 / user_acquisition
+    conversion_to_user = timestamp.compare(new_users_db(higher_date, lower_date),
+                                           user_acquisition)  # все пользователи которые попали в базу?
+    bounce_rate = float(breathhh_ga_metrics(startDate=startDate, metrics="ga:bounceRate", endDate=endDate))
+    k_factor_rate = ''
+    new_users = new_users_db_installed(higher_date, lower_date)  # а тут только те, которые ext_installed
+    install_rate = timestamp.compare(new_users_db_installed(higher_date, lower_date), user_acquisition)
+    onboarding_rate = timestamp.compare(onboard_users(higher_date, lower_date), new_users)
+    active_users = active_users_db(higher_date, lower_date)
+    one_day_retention = ''
+    seven_day_retention = ''
+    deleted_users_rate = timestamp.compare(acc_removed(higher_date, lower_date), active_users)
+    uninstall_rate = timestamp.compare(ext_removed(higher_date, lower_date), active_users)
+    conversion_to_feedback = ''  # где узнать то дал фидбек или нет челик
+    breathing_sim_rel_rate = simulator_relevance_rate(higher_date, lower_date)
+    warm_up_rel_rate = warm_up_relevance_rate(higher_date, lower_date)
+    background_noise_rate = ''
+
+
+# schedule.every().sunday.at('20:59').do(weekly_report)
+# schedule.every().day.at('21:00').do(monthly_report)
+
+
+def new_users_db_installed(higher_date, lower_date=0):
+    count = breathhh_get(query="SELECT count(id) FROM users WHERE extension_state = 'extension_installed' and "
+                               f"created_at between now() - interval '{higher_date} days' "
+                               f"and now() - interval '{lower_date} days'")
+    return count.iloc[0]["count"]
+
+
+def new_users_db(higher_date, lower_date=0):
+    count = breathhh_get(query="SELECT count(id) FROM users WHERE created_at between"
+                               f" now() - interval '{higher_date} days' and interval '{lower_date} days'")
+    return count.iloc[0]["count"]
+
+
+def onboard_users(higher_date, lower_date=0):
+    count = breathhh_get(query="select count(id) from users where onboarding_state ="
+                               "'onboarding_extension_installed_step' and extension_state ='extension_installed'"
+                               f"and created_at between now() - interval'{higher_date} days' and interval"
+                               f"'{lower_date} days'")
+    return count.iloc[0]["count"]
+
+
+def active_users_db(higher_date, lower_date=0):
+    count = breathhh_get(query="select count(distinct user_id) from actions where created_at between "
+                               f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
+    return count.iloc[0]["count"]
+
+
+def ext_removed(higher_date, lower_date=0):
+    count = breathhh_get(query="with active_users as (select distinct user_id from actions where created_at between "
+                               f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days') "
+                               f"select count(id) from users right join active_users on active_users.user_id = users.id"
+                               f" where extension_state = 'extension_removed'")
+    return count.iloc[0]["count"]
+
+
+def acc_removed(higher_date, lower_date=0):
+    count = breathhh_get(query="with active_users as (select distinct user_id from actions where created_at between "
+                               f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days') "
+                               f"select count(id) from users right join active_users on active_users.user_id = users.id"
+                               f" where name = 'deleted_user'")
+    return count.iloc[0]["count"]
+
+
+def simulator_relevance_rate(higher_date, lower_date=0):
+    count = breathhh_get(query="select count(extract(seconds from closed_at - opened_at)) as active_time "
+                               "from actions where kind in ('extension','breathing') and created_at between"
+                               f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
+    more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
+    calc = timestamp.compare(lower, more)
+    return calc
+
+
+def picker_relevance_rate(higher_date, lower_date=0):
+    count = breathhh_get(query="select count(extract(seconds from closed_at - opened_at)) as active_time "
+                               "from actions where url='diary' and created_at between"
+                               f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
+    more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
+    calc = timestamp.compare(lower, more)
+    return calc
+
+
+def warm_up_relevance_rate(higher_date, lower_date=0):
+    count = breathhh_get(query="select count(extract(seconds from closed_at - opened_at)) as active_time "
+                               "from actions where url='diary' and created_at between"
+                               f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
+    more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
+    calc = timestamp.compare(lower, more)
+    return calc
