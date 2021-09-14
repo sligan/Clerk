@@ -12,12 +12,13 @@ load_dotenv()
 def donations_day():
     data = request.form
     channel_id = data.get('channel_id')
+    support_price, support_count = bmc(timestamps=timestamp.timestamps(1))
     client.chat_postMessage(channel=channel_id,
-                            text='*Donations*'
-                                 f"\n Period: Day ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
+                            text='*Donations - Day*'
+                                 f"\n Period: ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
                                  f" - {datetime.today().strftime('%d ' + '%B')}) \n"
-                                 '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(1))}$')
+                                 f'\n Donations: {support_count}'
+                                 f'\n Profit: ${support_price}')
     return Response(), 200
 
 
@@ -25,12 +26,13 @@ def donations_day():
 def donations_week():
     data = request.form
     channel_id = data.get('channel_id')
+    support_price, support_count = bmc(timestamps=timestamp.timestamps(7))
     client.chat_postMessage(channel=channel_id,
-                            text='*Donations*'
-                                 f'\n Period: Week ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
+                            text='*Donations - Week*'
+                                 f'\n Period: ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(7))}$')
+                                 f'\n Donations: {support_count}'
+                                 f'\n Profit: ${support_price}')
     return Response(), 200
 
 
@@ -38,12 +40,13 @@ def donations_week():
 def donations_month():
     data = request.form
     channel_id = data.get('channel_id')
+    support_price, support_count = bmc(timestamps=timestamp.timestamps(30))
     client.chat_postMessage(channel=channel_id,
-                            text='*Donations*'
-                                 f'\n Period: Month ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
+                            text='*Donations - Month*'
+                                 f'\n Period: ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
-                                 '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.timestamps(30))}$')
+                                 f'\n Donations: {support_count}'
+                                 f'\n Profit: ${support_price}')
     return Response(), 200
 
 
@@ -61,10 +64,12 @@ def donations_all():
 
 def bmc(timestamps):
     support_price = 0
+    support_count = 0
     auth = {'Authorization': os.getenv('BMC_TOKEN')}
     response = requests.get('https://developers.buymeacoffee.com/api/v1/supporters', headers=auth)
     for data in response.json()['data']:
         date = datetime.strptime(data['support_created_on'][:10], '%Y-%m-%d')
         if date > timestamps:
             support_price += float(data['support_coffee_price'])
-    return support_price
+            support_count += 1
+    return support_price, support_count

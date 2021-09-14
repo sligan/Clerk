@@ -199,25 +199,48 @@ def breathhh_ga_metrics(startDate, metrics, endDate, dimensions=None):
                     return value
 
 
-def breathhh_metrics(higher_date, lower_date, startDate, endDate):
-    user_acquisition = breathhh_ga_metrics(startDate=startDate, metrics="ga:newUsers", endDate=endDate)
+def breathhh_metrics(higher_date, lower_date, start, end):
+    user_acquisition = breathhh_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)
+
     conversion_to_store = 123 / user_acquisition
+
     conversion_to_user = timestamp.compare2_0(new_users_db(higher_date, lower_date),
                                               user_acquisition)  # все пользователи которые попали в базу?
-    bounce_rate = float(breathhh_ga_metrics(startDate=startDate, metrics="ga:bounceRate", endDate=endDate))
-    k_factor_rate = ''
+
+    bounce_rate = float(breathhh_ga_metrics(startDate=start, metrics="ga:bounceRate", endDate=end))
+
+    k_factor_rate = timestamp.compare2_0(breathhh_ga_metrics(
+        startDate=start, endDate=end, metrics="ga:newUsers",
+        dimensions=[{'name': 'ga:referralPath'}]), user_acquisition)
+
     new_users = new_users_db_installed(higher_date, lower_date)  # а тут только те, которые ext_installed
+
     install_rate = timestamp.compare2_0(new_users_db_installed(higher_date, lower_date), user_acquisition)
+
     onboarding_rate = timestamp.compare2_0(onboard_users(higher_date, lower_date), new_users)
+
+    activation_rate = ''  # пока не нужно
+
     active_users = active_users_db(higher_date, lower_date)
+
     one_day_retention = ''
+
     seven_day_retention = ''
+
     deleted_users_rate = timestamp.compare2_0(acc_removed(higher_date, lower_date), active_users)
+
     uninstall_rate = timestamp.compare2_0(ext_removed(higher_date, lower_date), active_users)
+
     conversion_to_feedback = ''  # где узнать то дал фидбек или нет челик
+
     breathing_sim_rel_rate = simulator_relevance_rate(higher_date, lower_date)
+
+    mood_picker_dairy_rate = ''
+
     warm_up_rel_rate = warm_up_relevance_rate(higher_date, lower_date)
+
     background_noise_rate = ''
+
     return user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users\
         , install_rate, onboarding_rate, active_users, one_day_retention, seven_day_retention, deleted_users_rate\
         , uninstall_rate, conversion_to_feedback, breathing_sim_rel_rate, warm_up_rel_rate, background_noise_rate
