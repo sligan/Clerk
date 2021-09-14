@@ -16,10 +16,10 @@ def new_lassie_day():
     data = request.form
     channel_id = data.get('channel_id')
 
-    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, conversion_to_user, \
-        compare_cto, aha_moment_rate, compare_amr, onboarding_rate, compare_or, average_interval_increases_rate, \
-        compare_ir, compare_cau, active_users = lassie_metrics(start='2DaysAgo', end='1DaysAgo', lower_date=1,
-                                                               higher_date=2)
+    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, k_factor_rate, \
+        compare_k_factor, conversion_to_user, compare_cto, aha_moment_rate, compare_amr, onboarding_rate, \
+        compare_or, average_interval_increases_rate, compare_ir, compare_cau, active_users =\
+        lassie_metrics(start='2DaysAgo', end='1DaysAgo', lower_date=1, higher_date=2)
 
     client.chat_postMessage(channel=channel_id,
                             text='*Lassie Smoke – Day*\n'
@@ -47,10 +47,11 @@ def new_lassie_week():
     data = request.form
     channel_id = data.get('channel_id')
 
-    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, conversion_to_user,\
-        compare_cto, aha_moment_rate, compare_amr, onboarding_rate, compare_or, average_interval_increases_rate,\
-        compare_ir, compare_cau, active_users = lassie_metrics(start='14DaysAgo', end='7DaysAgo', lower_date=7,
-                                                                     higher_date=14)
+    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, k_factor_rate, \
+        compare_k_factor, conversion_to_user, compare_cto, aha_moment_rate, compare_amr, onboarding_rate, \
+        compare_or, average_interval_increases_rate, compare_ir, compare_cau, active_users = \
+        lassie_metrics(start='14DaysAgo', end='7DaysAgo', lower_date=7, higher_date=14)
+
     client.chat_postMessage(channel=channel_id,
                             text='*Lassie Smoke – Week*\n'
                                  f"Period: {timestamp.timestamps(7).strftime('%d ' + '%B')} "
@@ -77,10 +78,11 @@ def lassie_month():
     data = request.form
     channel_id = data.get('channel_id')
 
-    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, conversion_to_user, \
-        compare_cto, aha_moment_rate, compare_amr, onboarding_rate, compare_or, average_interval_increases_rate,\
-        compare_ir, compare_cau, active_users = lassie_metrics(start='60DaysAgo', end='30DaysAgo', lower_date=30,
-                                                                     higher_date=60)
+    new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, k_factor_rate, \
+        compare_k_factor, conversion_to_user, compare_cto, aha_moment_rate, compare_amr, onboarding_rate, \
+        compare_or, average_interval_increases_rate, compare_ir, compare_cau, active_users = \
+        lassie_metrics(start='60DaysAgo', end='30DaysAgo', lower_date=30, higher_date=60)
+
     client.chat_postMessage(channel=channel_id,
                             text='*Lassie Smoke – Month*\n'
                                  f"Period: {timestamp.timestamps(30).strftime('%d ' + '%B')} "
@@ -115,6 +117,8 @@ def lassie_all():
     aha_moment_rate = timestamp.compare2_0(aha(timestamp.start_day()), new_users)
     average_interval_increases_rate = timestamp.compare2_0(interval(timestamp.start_day()), new_users)
     active_users = count_active_users(timestamp.start_day())
+    k_factor_rate = timestamp.compare2_0(lassie_ga_metrics(startDate='2021-01-01', metrics="ga:newUsers",
+                                                           dimensions=[{'name': 'ga:referralPath'}]), new_users_landing)
 
     client.chat_postMessage(channel=channel_id,
                             text='*Lassie Smoke – Month*\n'
@@ -124,7 +128,7 @@ def lassie_all():
                                  f'User Acquisition (UA): {new_users_landing}\n'
                                  f'Conversion to User (CR1): {conversion_to_user}%\n'
                                  f'Bounce Rate: {floor(bounce_rate)}%\n'
-                                 'K-factor Rate (Viral): {this} {previous}\n'
+                                 f'K-factor Rate (Viral): {k_factor_rate}\n'
                                  '\n'
                                  '*Product* 🍏\n'
                                  f'New Users: {new_users}\n'
@@ -148,6 +152,15 @@ def lassie_metrics(start, end, higher_date, lower_date):
     compare_br = timestamp.compare(bounce_rate,
                                    lassie_ga_metrics(startDate=start, metrics='ga:bounceRate', endDate=end))
 
+    k_factor_rate = timestamp.compare2_0(lassie_ga_metrics(startDate=end, metrics="ga:newUsers",
+                                                           dimensions=[{'name': 'ga:referralPath'}]), new_users_landing)
+    k_factor_rate_prev = timestamp.compare2_0(lassie_ga_metrics(startDate=start, endDate=end, metrics="ga:newUsers",
+                                                                dimensions=[{'name': 'ga:referralPath'}]),
+                                              lassie_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end))
+    compare_k_factor = timestamp.compare(k_factor_rate, lassie_ga_metrics(startDate=start, endDate=end,
+                                                                          metrics="ga:newUsers",
+                                                                          dimensions=[{'name': 'ga:referralPath'}]))
+
     conversion_to_user = timestamp.compare2_0(new_users, new_users_landing)
     conversion_to_user_prev = timestamp.compare2_0(new_users_db(higher_date, lower_date),
                                                    lassie_ga_metrics(startDate=start, metrics='ga:newUsers',
@@ -159,8 +172,8 @@ def lassie_metrics(start, end, higher_date, lower_date):
     compare_amr = timestamp.compare(aha_moment_rate, aha_moment_rate_prev)
 
     onboarding_rate = timestamp.compare2_0(new_users_db_active(lower_date), new_users)
-    compare_or = timestamp.compare(onboarding_rate, timestamp.compare2_0(new_users_db_active(higher_date, lower_date)
-                                                                         , new_users_db(higher_date, lower_date)))
+    compare_or = timestamp.compare(onboarding_rate, timestamp.compare2_0(new_users_db_active(higher_date, lower_date),
+                                                                         new_users_db(higher_date, lower_date)))
 
     average_interval_increases_rate = timestamp.compare2_0(interval(lower_date), new_users)
     average_interval_increases_rate_prev = timestamp.compare2_0(interval(higher_date, lower_date),
@@ -171,15 +184,16 @@ def lassie_metrics(start, end, higher_date, lower_date):
 
     active_users = count_active_users(lower_date)
 
-    return new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, conversion_to_user,\
-        compare_cto, aha_moment_rate, compare_amr, onboarding_rate, compare_or, average_interval_increases_rate,\
-        compare_ir, compare_cau, active_users
+    return new_users, compare_nu, new_users_landing, compare_nul, bounce_rate, compare_br, k_factor_rate,\
+        compare_k_factor, conversion_to_user, compare_cto, aha_moment_rate, compare_amr, onboarding_rate,\
+        compare_or, average_interval_increases_rate, compare_ir, compare_cau, active_users
 
 
-def lassie_ga_metrics(startDate, metrics, endDate='today', ):
+def lassie_ga_metrics(startDate, metrics, endDate='today', dimensions=None):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_LESSIE'),
                                        dateRanges=[{'startDate': startDate, 'endDate': endDate}],
+                                       dimensions=dimensions,
                                        metrics=[{'expression': metrics}])])).execute()
     for report in response.get('reports', []):
         columnheader = report.get('columnHeader', {})

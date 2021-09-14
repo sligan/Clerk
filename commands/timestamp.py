@@ -27,7 +27,7 @@ def compare(x, y):
         else:
             return '0%'
     except ZeroDivisionError:
-        return '0%'
+        return 'previous N/A'
 
 
 def compare2_0(lower, higher):

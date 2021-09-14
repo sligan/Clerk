@@ -29,4 +29,5 @@ if __name__ == '__main__':
     from commands.breathhh import *
     from commands.lassie import *
     from commands.donations import *
+    from commands.Alpaca import *
     app.run(port=os.getenv('PORT'))

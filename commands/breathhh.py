@@ -183,10 +183,11 @@ def breathhh_all():
     return Response(), 200
 
 
-def breathhh_ga_metrics(startDate, metrics, endDate):
+def breathhh_ga_metrics(startDate, metrics, endDate, dimensions=None):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_BREATHHH'),
                                        dateRanges=[{'startDate': startDate, 'endDate': endDate}],
+                                       dimensions=dimensions,
                                        metrics=[{'expression': metrics}])])).execute()
     for report in response.get('reports', []):
         columnheader = report.get('columnHeader', {})
@@ -201,22 +202,25 @@ def breathhh_ga_metrics(startDate, metrics, endDate):
 def breathhh_metrics(higher_date, lower_date, startDate, endDate):
     user_acquisition = breathhh_ga_metrics(startDate=startDate, metrics="ga:newUsers", endDate=endDate)
     conversion_to_store = 123 / user_acquisition
-    conversion_to_user = timestamp.compare(new_users_db(higher_date, lower_date),
-                                           user_acquisition)  # все пользователи которые попали в базу?
+    conversion_to_user = timestamp.compare2_0(new_users_db(higher_date, lower_date),
+                                              user_acquisition)  # все пользователи которые попали в базу?
     bounce_rate = float(breathhh_ga_metrics(startDate=startDate, metrics="ga:bounceRate", endDate=endDate))
     k_factor_rate = ''
     new_users = new_users_db_installed(higher_date, lower_date)  # а тут только те, которые ext_installed
-    install_rate = timestamp.compare(new_users_db_installed(higher_date, lower_date), user_acquisition)
-    onboarding_rate = timestamp.compare(onboard_users(higher_date, lower_date), new_users)
+    install_rate = timestamp.compare2_0(new_users_db_installed(higher_date, lower_date), user_acquisition)
+    onboarding_rate = timestamp.compare2_0(onboard_users(higher_date, lower_date), new_users)
     active_users = active_users_db(higher_date, lower_date)
     one_day_retention = ''
     seven_day_retention = ''
-    deleted_users_rate = timestamp.compare(acc_removed(higher_date, lower_date), active_users)
-    uninstall_rate = timestamp.compare(ext_removed(higher_date, lower_date), active_users)
+    deleted_users_rate = timestamp.compare2_0(acc_removed(higher_date, lower_date), active_users)
+    uninstall_rate = timestamp.compare2_0(ext_removed(higher_date, lower_date), active_users)
     conversion_to_feedback = ''  # где узнать то дал фидбек или нет челик
     breathing_sim_rel_rate = simulator_relevance_rate(higher_date, lower_date)
     warm_up_rel_rate = warm_up_relevance_rate(higher_date, lower_date)
     background_noise_rate = ''
+    return user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users\
+        , install_rate, onboarding_rate, active_users, one_day_retention, seven_day_retention, deleted_users_rate\
+        , uninstall_rate, conversion_to_feedback, breathing_sim_rel_rate, warm_up_rel_rate, background_noise_rate
 
 
 # schedule.every().sunday.at('20:59').do(weekly_report)
@@ -271,7 +275,7 @@ def simulator_relevance_rate(higher_date, lower_date=0):
                                "from actions where kind in ('extension','breathing') and created_at between"
                                f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
     more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
-    calc = timestamp.compare(lower, more)
+    calc = timestamp.compare2_0(lower, more)
     return calc
 
 
@@ -280,7 +284,7 @@ def picker_relevance_rate(higher_date, lower_date=0):
                                "from actions where url='diary' and created_at between"
                                f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
     more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
-    calc = timestamp.compare(lower, more)
+    calc = timestamp.compare2_0(lower, more)
     return calc
 
 
@@ -289,5 +293,5 @@ def warm_up_relevance_rate(higher_date, lower_date=0):
                                "from actions where url='diary' and created_at between"
                                f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
     more, lower = (count['active_time'] > 5).sum(), (count['active_time'] < 5).sum()
-    calc = timestamp.compare(lower, more)
+    calc = timestamp.compare2_0(lower, more)
     return calc
