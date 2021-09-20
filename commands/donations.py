@@ -56,9 +56,8 @@ def donations_all():
     channel_id = data.get('channel_id')
     support_price, support_count = bmc(timestamps=calculations.timestamps(10000))
     client.chat_postMessage(channel=channel_id,
-                            text='*Donations*\n'
+                            text='*Donations - All*\n'
                                  f"Period: All time \n"
-                                 'Buy Me a Coffee donations:\n'
                                  f'Donations: {support_count}\n'
                                  f'Profit: ${support_price}')
     return Response(), 200
