@@ -3,7 +3,7 @@ import requests
 from flask import request, Response
 from main import app, client
 from dotenv import load_dotenv
-from commands import timestamp
+from commands import calculations
 from datetime import datetime
 load_dotenv()
 
@@ -12,10 +12,10 @@ load_dotenv()
 def donations_day():
     data = request.form
     channel_id = data.get('channel_id')
-    support_price, support_count = bmc(timestamps=timestamp.timestamps(1))
+    support_price, support_count = bmc(timestamps=calculations.timestamps(1))
     client.chat_postMessage(channel=channel_id,
                             text='*Donations - Day*'
-                                 f"\n Period: ({(timestamp.timestamps(1).strftime('%d ' + '%B'))}"
+                                 f"\n Period: ({(calculations.timestamps(1).strftime('%d ' + '%B'))}"
                                  f" - {datetime.today().strftime('%d ' + '%B')}) \n"
                                  f'\n Donations: {support_count}'
                                  f'\n Profit: ${support_price}')
@@ -26,10 +26,10 @@ def donations_day():
 def donations_week():
     data = request.form
     channel_id = data.get('channel_id')
-    support_price, support_count = bmc(timestamps=timestamp.timestamps(7))
+    support_price, support_count = bmc(timestamps=calculations.timestamps(7))
     client.chat_postMessage(channel=channel_id,
                             text='*Donations - Week*'
-                                 f'\n Period: ({(timestamp.timestamps(7).strftime("%d " + "%B"))}'
+                                 f'\n Period: ({(calculations.timestamps(7).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  f'\n Donations: {support_count}'
                                  f'\n Profit: ${support_price}')
@@ -40,10 +40,10 @@ def donations_week():
 def donations_month():
     data = request.form
     channel_id = data.get('channel_id')
-    support_price, support_count = bmc(timestamps=timestamp.timestamps(30))
+    support_price, support_count = bmc(timestamps=calculations.timestamps(30))
     client.chat_postMessage(channel=channel_id,
                             text='*Donations - Month*'
-                                 f'\n Period: ({(timestamp.timestamps(30).strftime("%d " + "%B"))}'
+                                 f'\n Period: ({(calculations.timestamps(30).strftime("%d " + "%B"))}'
                                  f' - {datetime.today().strftime("%d " + "%B")}) \n'
                                  f'\n Donations: {support_count}'
                                  f'\n Profit: ${support_price}')
@@ -58,7 +58,7 @@ def donations_all():
                             text='*Donations*'
                                  f"\n Period: All time \n"
                                  '\n Buy Me a Coffee donations:'
-                                 f'\n Value: {bmc(timestamps=timestamp.start_day())}$')
+                                 f'\n Value: {bmc(timestamps=calculations.start_day())}$')
     return Response(), 200
 
 

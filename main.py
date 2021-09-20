@@ -30,4 +30,5 @@ if __name__ == '__main__':
     from commands.lassie import *
     from commands.donations import *
     from commands.Alpaca import *
+    from commands.help import *
     app.run(port=os.getenv('PORT'))

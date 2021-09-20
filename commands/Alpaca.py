@@ -1,10 +1,9 @@
 import main
-from math import floor
 from flask import request, Response
 from db_connect import alpaca_get
 from datetime import datetime
 from main import app, client
-from commands import timestamp
+from commands import calculations
 from dotenv import load_dotenv
 import os
 
@@ -26,14 +25,14 @@ def alpaca_day():
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Day*\n'
-                                 f"Period: {timestamp.timestamps(1).strftime('%d ' + '%B')} "
+                                 f"Period: {calculations.timestamps(1).strftime('%d ' + '%B')} "
                                  f"- {datetime.today().strftime('%d ' + '%B')}\n"
                                  '\n'
                                  '*Marketing* 📢\n'
                                  f'User Acquisition (UA): {new_users_landing} ({new_users_compare})\n'
                                  f'Conversion to Install (CR1): {conversion_to_install}%'
                                  f' ({conversion_to_install_compare})\n'
-                                 f'Bounce Rate: {floor(bounce_rate)}% ({bounce_rate_compare})\n'
+                                 f'Bounce Rate: {round(bounce_rate, 1)}% ({bounce_rate_compare})\n'
                                  f'K-factor Rate (Viral): {k_factor_rate}% ({k_factor_rate_compare})\n'
                                  '\n'
                                  '*Product* 🍏\n'
@@ -59,14 +58,14 @@ def alpaca_week():
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Week*\n'
-                                 f"Period: {timestamp.timestamps(7).strftime('%d ' + '%B')} "
+                                 f"Period: {calculations.timestamps(7).strftime('%d ' + '%B')} "
                                  f"- {datetime.today().strftime('%d ' + '%B')}\n"
                                  '\n'
                                  '*Marketing* 📢\n'
                                  f'User Acquisition (UA): {new_users_landing} ({new_users_compare})\n'
                                  f'Conversion to Install (CR1): {conversion_to_install}%'
                                  f' ({conversion_to_install_compare})\n'
-                                 f'Bounce Rate: {floor(bounce_rate)}% ({bounce_rate_compare})\n'
+                                 f'Bounce Rate: {round(bounce_rate, 1)}% ({bounce_rate_compare})\n'
                                  f'K-factor Rate (Viral): {k_factor_rate}% ({k_factor_rate_compare})\n'
                                  '\n'
                                  '*Product* 🍏\n'
@@ -92,14 +91,14 @@ def alpaca_month():
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Month*\n'
-                                 f"Period: {timestamp.timestamps(30).strftime('%d ' + '%B')} "
+                                 f"Period: {calculations.timestamps(30).strftime('%d ' + '%B')} "
                                  f"- {datetime.today().strftime('%d ' + '%B')}\n"
                                  '\n'
                                  '*Marketing* 📢\n'
                                  f'User Acquisition (UA): {new_users_landing} ({new_users_compare})\n'
                                  f'Conversion to Install (CR1): {conversion_to_install}%'
                                  f' ({conversion_to_install_compare})\n'
-                                 f'Bounce Rate: {floor(bounce_rate)}% ({bounce_rate_compare})\n'
+                                 f'Bounce Rate: {round(bounce_rate, 1)}% ({bounce_rate_compare})\n'
                                  f'K-factor Rate (Viral): {k_factor_rate}% ({k_factor_rate_compare})\n'
                                  '\n'
                                  '*Product* 🍏\n'
@@ -116,8 +115,8 @@ def alpaca_all():
     channel_id = data.get('channel_id')
 
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=timestamp.start_day(), lower_date=0,
-                                      start=f'{timestamp.start_day()}DaysAgo', end='today')
+        active_teams = alpaca_metrics(higher_date=calculations.start_day(), lower_date=0,
+                                      start=f'{calculations.start_day()}DaysAgo', end='today')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – All*\n'
@@ -126,7 +125,7 @@ def alpaca_all():
                                  '*Marketing* 📢\n'
                                  f'User Acquisition (UA): {new_users_landing}\n'
                                  f'Conversion to Install (CR1): {conversion_to_install}%\n'
-                                 f'Bounce Rate: {floor(bounce_rate)}%\n'
+                                 f'Bounce Rate: {round(bounce_rate, 1)}%\n'
                                  f'K-factor Rate (Viral): {k_factor_rate}%\n'
                                  '\n'
                                  '*Product* 🍏\n'
@@ -156,18 +155,18 @@ def alpaca_ga_metrics(startDate, metrics, endDate, dimensions=None):
 def alpaca_metrics(higher_date, lower_date, start, end):
     new_users_landing = alpaca_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)
 
-    conversion_to_install = timestamp.compare2_0(new_teams_db(higher_date, lower_date), new_users_landing)
+    conversion_to_install = calculations.compare2_0(new_teams_db(higher_date, lower_date), new_users_landing)
 
     bounce_rate = float(alpaca_ga_metrics(startDate=start, metrics="ga:bounceRate", endDate=end))
 
     no_ref = alpaca_ga_metrics(startDate=start, endDate=end, metrics="ga:newUsers",
                                dimensions=[{'name': 'ga:referralPath'}])
 
-    k_factor_rate = timestamp.compare2_0(no_ref, new_users_landing)
+    k_factor_rate = calculations.compare2_0(no_ref, new_users_landing)
 
     new_teams = new_teams_db(higher_date, lower_date)
 
-    aha_moment_rate = timestamp.compare2_0(aha_moment(higher_date, lower_date), new_teams_db(higher_date, lower_date))
+    aha_moment_rate = calculations.compare2_0(aha_moment(higher_date, lower_date), new_teams_db(higher_date, lower_date))
 
     active_teams = active_teams_db(higher_date, lower_date)
 
@@ -184,19 +183,19 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
         aha_moment_rate_prev, active_teams_prev \
         = alpaca_metrics(higher_date=higher_date_prev, lower_date=lower_date_prev, start=start_prev, end=end_prev)
 
-    new_users_compare = timestamp.compare(new_users_landing, new_users_landing_prev)
+    new_users_compare = calculations.compare(new_users_landing, new_users_landing_prev)
 
-    conversion_to_install_compare = timestamp.compare(conversion_to_install, conversion_to_install_prev)
+    conversion_to_install_compare = calculations.compare(conversion_to_install, conversion_to_install_prev)
 
-    bounce_rate_compare = timestamp.compare(bounce_rate, bounce_rate_prev)
+    bounce_rate_compare = calculations.compare(bounce_rate, bounce_rate_prev)
 
-    k_factor_rate_compare = timestamp.compare(k_factor_rate, k_factor_rate_prev)
+    k_factor_rate_compare = calculations.compare(k_factor_rate, k_factor_rate_prev)
 
-    new_teams_compare = timestamp.compare(new_teams, new_teams_prev)
+    new_teams_compare = calculations.compare(new_teams, new_teams_prev)
 
-    aha_moment_rate_compare = timestamp.compare(aha_moment_rate, aha_moment_rate_prev)
+    aha_moment_rate_compare = calculations.compare(aha_moment_rate, aha_moment_rate_prev)
 
-    active_teams_compare = timestamp.compare(active_teams, active_teams_prev)
+    active_teams_compare = calculations.compare(active_teams, active_teams_prev)
 
     return new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
         new_teams_compare, aha_moment_rate_compare, active_teams_compare

@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import schedule
 import threading
 import time
-from math import floor
 
 
 def timestamps(days):
@@ -19,24 +18,24 @@ def compare(x, y):
     try:
         z = float(x) / float(y) * 100 - 100
         if z < 0:
-            return f'▼ {floor(z)}%'
+            return f'▼ {round(z,1)}%'
         elif z == 0:
             return '0%'
         elif z > 0:
-            return f'▲ +{floor(z)}%'
+            return f'▲ +{round(z,1)}%'
         else:
             return '0%'
     except ZeroDivisionError:
-        return 'previous N/A'
+        return ' -- '
 
 
 def compare2_0(lower, higher):
     try:
-        z = int(lower) / int(higher) * 100
+        z = float(lower) / float(higher) * 100
         if z == 0:
             return '0'
         elif z > 0:
-            return f'{floor(z)}'
+            return f'{round(z,1)}'
     except ZeroDivisionError:
         return '0'
     except TypeError:
