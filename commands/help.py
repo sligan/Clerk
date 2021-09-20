@@ -38,7 +38,7 @@ def breathhh_help():
                                  'Breathing Simulator Relevance Rate - Процент вкладок с дыханием, которые закрыли '
                                  'более чем за 5 секунд. \n '
                                  'Mood Picker (Diary) Relevance Rate - Процент вкладок с дневником настроения, '
-                                 'которые закрыли более чем за 5 секунд. \n '
+                                 'в которых была реаакция (поставлен смайл). \n '
                                  "Warm-Up's Relevance Rate - Процент вкладок с разминкой, которые закрыли "
                                  "более чем за 5 секунд. \n "
                                  'Background Noise Usage Rate - _in progress_')
