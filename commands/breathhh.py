@@ -55,7 +55,7 @@ def breathhh_day():
                                  f' ({calculations.compare(retention_one_day(days=7)[-1::].iloc[0]["retention"], retention_one_day(days=7)[-2:-1:].iloc[0]["retention"])})\n '
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
-                                 f'Uninstall Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
+                                 f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
                                  f'Conversion to Feedback: {conversion_feedback}% ({conversion_feedback_compare})\n'
                                  f'\n'
                                  f'Breathing Simulator Relevance Rate: {breathing_sim_rel_rate}% '
@@ -112,7 +112,7 @@ def breathhh_week():
                                  f"({calculations.compare(retention_one_day(days=7)[-7::]['retention'].mean(), retention_one_day(days=7)[-14:-7:]['retention'].mean())})\n"
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
-                                 f'Uninstall Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
+                                 f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
                                  f'Conversion to Feedback: {conversion_feedback}% ({conversion_feedback_compare})\n'
                                  f'\n'
                                  f'Breathing Simulator Relevance Rate: {breathing_sim_rel_rate}% '
@@ -169,7 +169,7 @@ def breathhh_month():
                                  f"({calculations.compare(retention_one_day(days=7)[-30::]['retention'].mean(), retention_one_day(days=7)[-60:-30:]['retention'].mean())})\n"
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
-                                 f'Uninstall Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
+                                 f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
                                  f'Conversion to Feedback: {conversion_feedback}% ({conversion_feedback_compare})\n'
                                  f'\n'
                                  f'Breathing Simulator Relevance Rate: {breathing_sim_rel_rate}% '
@@ -210,9 +210,10 @@ def breathhh_all():
                                  f'Activation Rate: :thinking_face:\n'
                                  f'\n'
                                  f'Active Users: {active_users}\n'
-                                 f'Average Day 1 Retention Rate: {round(retention_one_day()["retention"].mean())}%\n'
+                                 f'Average Day 1 Retention Rate: '
+                                 f'{round(retention_one_day(higher_date=calculations.start_day())["retention"].mean())}%\n'
                                  f'Average Day 7 Retention Rate: '
-                                 f'{round(retention_one_day(days=7)["retention"].mean())}%\n'
+                                 f'{round(retention_one_day(higher_date=calculations.start_day(), days=7)["retention"].mean())}%\n'
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}%\n'
                                  f'Uninstall Rate: {uninstall_rate}%\n'
@@ -238,7 +239,7 @@ def breathhh_metrics(higher_date, lower_date, start, end):
                                                   user_acquisition)
 
     conversion_to_user = calculations.compare2_0(new_users_db(higher_date, lower_date),
-                                                 user_acquisition)  # все пользователи которые попали в базу?
+                                                 user_acquisition)
 
     bounce_rate = breathhh_ga_metrics(startDate=start, metrics="ga:bounceRate", endDate=end)['ga:bounceRate'][0]
 
@@ -246,7 +247,7 @@ def breathhh_metrics(higher_date, lower_date, start, end):
         startDate=start, endDate=end, metrics="ga:newUsers",
         dimensions=[{'name': 'ga:referralPath'}])['ga:newUsers'][0]), user_acquisition)
 
-    new_users = new_users_db_installed(higher_date, lower_date)  # а тут только те, которые ext_installed
+    new_users = new_users_db_installed(higher_date, lower_date)
     install_rate = calculations.compare2_0(new_users_db_installed(higher_date, lower_date), user_acquisition)
     onboarding_rate = calculations.compare2_0(onboard_users(higher_date, lower_date), new_users)
     activation_rate = ''  # пока не нужно
@@ -305,6 +306,9 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
            deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
            breathing_sim_rel_rate_compare, mood_picker_dairy_rate_compare, warm_up_rel_rate_compare, \
            background_noise_rate_compare
+
+
+# schedule.every(5).seconds.do(breathhh_week)
 
 
 # schedule.every().sunday.at('20:59').do(weekly_report)
@@ -422,14 +426,23 @@ def simulator_relevance_rate(higher_date, lower_date=0):
 
 
 def picker_relevance_rate(higher_date, lower_date=0):
-    count = breathhh_get(query="SELECT EXTRACT(seconds FROM closed_at - opened_at) AS active_time "
-                               "FROM actions WHERE url='diary' and created_at between"
-                               f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
-    sum_all = count['active_time'].count()
-    more = (count['active_time'] > 5).sum()
-    calc = calculations.compare2_0(more, sum_all)
-    return calc
+    count = breathhh_get(query="WITH count_actions AS("
+                               "SELECT count(created_at) as actions "
+                               "FROM actions "
+                               "WHERE kind = 'diary' and "
+                               "created_at between "
+                               f"now()-interval '{higher_date} days' and now() - interval '{lower_date} days'), "
+                               "count_moods AS "
+                               "(SELECT count(created_at) as moods "
+                               "FROM moods "
+                               f"WHERE created_at between "
+                               f"now()-interval '{higher_date} days' and now() - interval '{lower_date} days') "
+                               "SELECT * "
+                               "FROM count_actions, count_moods")
+    from_actions = count['actions'].iloc[0]
+    from_moods = count['moods'].iloc[0]
+    rate = calculations.compare2_0(from_moods, from_actions)
+    return rate
 
 
 def warm_up_relevance_rate(higher_date, lower_date=0):
@@ -456,7 +469,7 @@ def retention_one_day(higher_date=60, lower_date=0, days=1):
     ret = breathhh_get(
         query="WITH mydates AS "
               "(SELECT date_trunc('day', dates.dates)::date AS dates FROM generate_series"
-              "((SELECT min(created_at) from actions), (SELECT max(created_at) from actions), interval '1 day') "
+              "((SELECT min(created_at) FROM actions), (SELECT max(created_at) FROM actions), interval '1 day') "
               "AS dates), ret AS "
               "(SELECT distinct date_trunc('day', actions.created_at)::date AS date, "
               "count(distinct actions.user_id) AS active_users, count(distinct future_actions.user_id) "
