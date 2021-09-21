@@ -17,7 +17,7 @@ def main_function(frst, scnd, frst_ga, scnd_ga, comp_frst, comp_scnd, comp_frst_
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
         , install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate \
         , conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
-        , warm_up_rel_rate, background_noise_rate, retention_one_day, retention_seven_day\
+        , warm_up_rel_rate, background_noise_rate, retention_one_day, retention_seven_day \
         = breathhh_metrics(frst, scnd, frst_ga, scnd_ga)
 
     user_acquisition_compare, conversion_to_store_compare, conversion_to_user_compare, bounce_rate_compare, \
@@ -224,12 +224,6 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
            background_noise_rate_compare, retention_one_day_compare, retention_seven_day_compare
 
 
-# schedule.every(5).seconds.do(breathhh_week)
-
-
-# schedule.every().sunday.at('20:59').do(weekly_report)
-# schedule.every().day.at('21:00').do(monthly_report)
-
 def breathhh_ga_metrics(startDate, metrics, endDate, dimensions=None, filters=''):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_BREATHHH'),
@@ -393,6 +387,9 @@ def retention_by_day(higher_date=60, lower_date=0, days=1):
               f"WHERE dates between now() - interval '{higher_date + 1} days' and now() - interval '{lower_date} days'")
     return ret['avg'][0]
 
-#
-# print(retention_by_day(8,1,days=1))
-#
+
+schedule.every().sunday.at('20:59').do(main_function, 7, 0, '7DaysAgo', '0DaysAgo', 14, 7, '14DaysAgo',
+                                       '7DaysAgo', 'Week', os.getenv('CHANNEL'))
+
+schedule.every(30).days.do(main_function, 30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo',
+                           'Month', os.getenv('CHANNEL'))
