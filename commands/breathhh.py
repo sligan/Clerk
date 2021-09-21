@@ -8,30 +8,28 @@ from main import app, client
 from commands import calculations
 from dotenv import load_dotenv
 import pandas as pd
+from threading import Thread
 
 load_dotenv()
 
 
-@app.route('/breathhh-day', methods=['POST'])
-def breathhh_day():
-    data = request.form
-    channel_id = data.get('channel_id')
-
+def main_function(frst, scnd, frst_ga, scnd_ga, comp_frst, comp_scnd, comp_frst_ga, comp_scnd_ga, name, channel_id):
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
-        , install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention \
-        , deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
-        , warm_up_rel_rate, background_noise_rate = breathhh_metrics(1, 0, '1DaysAgo', '0DaysAgo')
+        , install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate \
+        , conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
+        , warm_up_rel_rate, background_noise_rate, retention_one_day, retention_seven_day\
+        = breathhh_metrics(frst, scnd, frst_ga, scnd_ga)
 
     user_acquisition_compare, conversion_to_store_compare, conversion_to_user_compare, bounce_rate_compare, \
     k_factor_rate_compare, new_users_compare, install_rate_compare, onboarding_rate_compare, activation_rate, \
-    active_users_prev_compare, one_day_retention_compare, seven_day_retention_compare, \
-    deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
+    active_users_prev_compare, deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
     breathing_sim_rel_rate_compare, mood_picker_dairy_rate_compare, warm_up_rel_rate_compare, \
-    background_noise_rate_compare = compare_metrics(1, 0, '1DaysAgo', '0DaysAgo', 2, 1, '2DaysAgo', '1DaysAgo')
+    background_noise_rate_compare, retention_one_day_compare, retention_seven_day_compare = \
+        compare_metrics(frst, scnd, frst_ga, scnd_ga, comp_frst, comp_scnd, comp_frst_ga, comp_scnd_ga)
 
     client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh - Day*\n'
-                                 f"Period: {calculations.timestamps(1).strftime('%d ' + '%B')} "
+                            text=f'*Breathhh - {name}*\n'
+                                 f"Period: {calculations.timestamps(frst).strftime('%d ' + '%B')} "
                                  f"- {datetime.today().strftime('%d ' + '%B')}\n"
                                  '\n'
                                  '*Marketing* 📢\n'
@@ -48,11 +46,10 @@ def breathhh_day():
                                  f'Activation Rate: :thinking_face:\n'
                                  f'\n'
                                  f'Active Users: {active_users} ({active_users_prev_compare})\n'
-                                 f'Average Day 1 Retention Rate: {retention_one_day()[-1::].iloc[0]["retention"]} '
-                                 f'({calculations.compare(retention_one_day()[-1::].iloc[0]["retention"], retention_one_day()[-2:-1:].iloc[0]["retention"])})\n '
-                                 f'Average Day 7 Retention Rate: '
-                                 f'{round(retention_one_day(days=7)[-1::].iloc[0]["retention"])}'
-                                 f' ({calculations.compare(retention_one_day(days=7)[-1::].iloc[0]["retention"], retention_one_day(days=7)[-2:-1:].iloc[0]["retention"])})\n '
+                                 f"Average Day 1 Retention Rate: "
+                                 f"{round(retention_one_day, 1)}% ({retention_one_day_compare})\n"
+                                 f"Average Day 7 Retention Rate:"
+                                 f" {round(retention_seven_day, 1)}% ({retention_seven_day_compare})\n"
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
                                  f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
@@ -65,6 +62,14 @@ def breathhh_day():
                                  f"Warm-Up's Relevance Rate: {warm_up_rel_rate}% ({warm_up_rel_rate_compare})\n"
                                  f'Background Noise Usage Rate: :thinking_face:')
 
+
+@app.route('/breathhh-day', methods=['POST'])
+def breathhh_day():
+    data = request.form
+    channel_id = data.get('channel_id')
+    thr = Thread(target=main_function,
+                 args=[1, 0, '1DaysAgo', '0DaysAgo', 2, 1, '2DaysAgo', '1DaysAgo', 'Day', channel_id])
+    thr.start()
     return Response(), 200
 
 
@@ -72,56 +77,9 @@ def breathhh_day():
 def breathhh_week():
     data = request.form
     channel_id = data.get('channel_id')
-
-    user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
-        , install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention \
-        , deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
-        , warm_up_rel_rate, background_noise_rate = breathhh_metrics(7, 0, '7DaysAgo', '0DaysAgo')
-
-    user_acquisition_compare, conversion_to_store_compare, conversion_to_user_compare, bounce_rate_compare, \
-    k_factor_rate_compare, new_users_compare, install_rate_compare, onboarding_rate_compare, activation_rate, \
-    active_users_prev_compare, one_day_retention_compare, seven_day_retention_compare, \
-    deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
-    breathing_sim_rel_rate_compare, mood_picker_dairy_rate_compare, warm_up_rel_rate_compare, \
-    background_noise_rate_compare = compare_metrics(7, 0, '7DaysAgo', '0DaysAgo', 14, 7, '14DaysAgo', '7DaysAgo')
-
-    client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh - Week*\n'
-                                 f"Period: {calculations.timestamps(7).strftime('%d ' + '%B')} "
-                                 f"- {datetime.today().strftime('%d ' + '%B')}\n"
-                                 '\n'
-                                 '*Marketing* 📢\n'
-                                 f'User Acquisition (UA): {user_acquisition} ({user_acquisition_compare})\n'
-                                 f'Conversion to Store (CR1): {conversion_to_store}% ({conversion_to_store_compare})\n'
-                                 f'Conversion to User (CR2): {conversion_to_user}% ({conversion_to_user_compare})\n'
-                                 f'Bounce Rate: {round(bounce_rate, 1)}% ({bounce_rate_compare})\n'
-                                 f'K-factor Rate (Viral): {k_factor_rate}% ({k_factor_rate_compare})\n'
-                                 '\n'
-                                 '*Product* 🍏\n'
-                                 f'New Users: {new_users} ({new_users_compare})\n'
-                                 f'Install Rate: {install_rate}% ({install_rate_compare})\n'
-                                 f'Onboarding Rate: {onboarding_rate}% ({onboarding_rate_compare})\n'
-                                 f'Activation Rate: :thinking_face:\n'
-                                 f'\n'
-                                 f'Active Users: {active_users} ({active_users_prev_compare})\n'
-                                 f"Average Day 1 Retention Rate: "
-                                 f"{round(retention_one_day()[-7::]['retention'].mean())}% "
-                                 f"({calculations.compare(retention_one_day()[-7::]['retention'].mean(), retention_one_day()[-14:-7:]['retention'].mean())})\n"
-                                 f"Average Day 7 Retention Rate: "
-                                 f"{round(retention_one_day(days=7)[-7::]['retention'].mean())}% "
-                                 f"({calculations.compare(retention_one_day(days=7)[-7::]['retention'].mean(), retention_one_day(days=7)[-14:-7:]['retention'].mean())})\n"
-                                 f'\n'
-                                 f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
-                                 f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
-                                 f'Conversion to Feedback: {conversion_feedback}% ({conversion_feedback_compare})\n'
-                                 f'\n'
-                                 f'Breathing Simulator Relevance Rate: {breathing_sim_rel_rate}% '
-                                 f'({breathing_sim_rel_rate_compare})\n'
-                                 f'Mood Picker (Diary) Relevance Rate: {mood_picker_dairy_rate}% '
-                                 f'({mood_picker_dairy_rate_compare})\n'
-                                 f"Warm-Up's Relevance Rate: {warm_up_rel_rate}% ({warm_up_rel_rate_compare})\n"
-                                 f'Background Noise Usage Rate: :thinking_face:')
-
+    thr = Thread(target=main_function,
+                 args=[7, 0, '7DaysAgo', '0DaysAgo', 14, 7, '14DaysAgo', '7DaysAgo', 'Week', channel_id])
+    thr.start()
     return Response(), 200
 
 
@@ -129,68 +87,18 @@ def breathhh_week():
 def breathhh_month():
     data = request.form
     channel_id = data.get('channel_id')
-
-    user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
-        , install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention \
-        , deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
-        , warm_up_rel_rate, background_noise_rate = breathhh_metrics(30, 0, '30DaysAgo', '0DaysAgo')
-
-    user_acquisition_compare, conversion_to_store_compare, conversion_to_user_compare, bounce_rate_compare, \
-    k_factor_rate_compare, new_users_compare, install_rate_compare, onboarding_rate_compare, activation_rate, \
-    active_users_prev_compare, one_day_retention_compare, seven_day_retention_compare, \
-    deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
-    breathing_sim_rel_rate_compare, mood_picker_dairy_rate_compare, warm_up_rel_rate_compare, \
-    background_noise_rate_compare = compare_metrics(30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo')
-
-    client.chat_postMessage(channel=channel_id,
-                            text='*Breathhh - Month*\n'
-                                 f"Period: {calculations.timestamps(30).strftime('%d ' + '%B')} "
-                                 f"- {datetime.today().strftime('%d ' + '%B')}\n"
-                                 '\n'
-                                 '*Marketing* 📢\n'
-                                 f'User Acquisition (UA): {user_acquisition} ({user_acquisition_compare})\n'
-                                 f'Conversion to Store (CR1): {conversion_to_store}% ({conversion_to_store_compare})\n'
-                                 f'Conversion to User (CR2): {conversion_to_user}% ({conversion_to_user_compare})\n'
-                                 f'Bounce Rate: {round(bounce_rate, 1)}% ({bounce_rate_compare})\n'
-                                 f'K-factor Rate (Viral): {k_factor_rate}% ({k_factor_rate_compare})\n'
-                                 '\n'
-                                 '*Product* 🍏\n'
-                                 f'New Users: {new_users} ({new_users_compare})\n'
-                                 f'Install Rate: {install_rate}% ({install_rate_compare})\n'
-                                 f'Onboarding Rate: {onboarding_rate}% ({onboarding_rate_compare})\n'
-                                 f'Activation Rate: :thinking_face:\n'
-                                 f'\n'
-                                 f'Active Users: {active_users} ({active_users_prev_compare})\n'
-                                 f"Average Day 1 Retention Rate: "
-                                 f"{round(retention_one_day()[-30::]['retention'].mean())}% "
-                                 f"({calculations.compare(retention_one_day()[-30::]['retention'].mean(), retention_one_day()[-60:-30:]['retention'].mean())})\n"
-                                 f"Average Day 7 Retention Rate: "
-                                 f"{round(retention_one_day(days=7)[-30::]['retention'].mean())}% "
-                                 f"({calculations.compare(retention_one_day(days=7)[-30::]['retention'].mean(), retention_one_day(days=7)[-60:-30:]['retention'].mean())})\n"
-                                 f'\n'
-                                 f'Deleted Users Rate: {deleted_users_rate}% ({deleted_users_rate_compare})\n'
-                                 f'Uninstall Extension Rate: {uninstall_rate}% ({uninstall_rate_compare})\n'
-                                 f'Conversion to Feedback: {conversion_feedback}% ({conversion_feedback_compare})\n'
-                                 f'\n'
-                                 f'Breathing Simulator Relevance Rate: {breathing_sim_rel_rate}% '
-                                 f'({breathing_sim_rel_rate_compare})\n'
-                                 f'Mood Picker (Diary) Relevance Rate: {mood_picker_dairy_rate}% '
-                                 f'({mood_picker_dairy_rate_compare})\n'
-                                 f"Warm-Up's Relevance Rate: {warm_up_rel_rate}% ({warm_up_rel_rate_compare})\n"
-                                 f'Background Noise Usage Rate: :thinking_face:')
+    thr = Thread(target=main_function,
+                 args=[30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo', 'Month', channel_id])
+    thr.start()
     return Response(), 200
 
 
-@app.route('/breathhh-all', methods=['POST'])
-def breathhh_all():
-    data = request.form
-    channel_id = data.get('channel_id')
-
-    user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
-        , install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention \
-        , deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate \
-        , warm_up_rel_rate, background_noise_rate = breathhh_metrics(calculations.start_day(), 0,
-                                                                     f'{calculations.start_day()}DaysAgo', '0DaysAgo')
+def main_function_all(channel_id):
+    user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users, \
+    install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate, \
+    conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate, warm_up_rel_rate, background_noise_rate, \
+    retention_one_day, retention_seven_day = \
+        breathhh_metrics(calculations.start_day(), 0, f'{calculations.start_day()}DaysAgo', '0DaysAgo')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Breathhh - All*\n'
@@ -211,9 +119,9 @@ def breathhh_all():
                                  f'\n'
                                  f'Active Users: {active_users}\n'
                                  f'Average Day 1 Retention Rate: '
-                                 f'{round(retention_one_day(higher_date=calculations.start_day())["retention"].mean())}%\n'
+                                 f'{round(retention_one_day, 1)}%\n'
                                  f'Average Day 7 Retention Rate: '
-                                 f'{round(retention_one_day(higher_date=calculations.start_day(), days=7)["retention"].mean())}%\n'
+                                 f'{round(retention_seven_day, 1)}%\n'
                                  f'\n'
                                  f'Deleted Users Rate: {deleted_users_rate}%\n'
                                  f'Uninstall Rate: {uninstall_rate}%\n'
@@ -224,24 +132,33 @@ def breathhh_all():
                                  f"Warm-Up's Relevance Rate: {warm_up_rel_rate}%\n"
                                  f'Background Noise Usage Rate: :thinking_face:')
 
+
+@app.route('/breathhh-all', methods=['POST'])
+def breathhh_all():
+    data = request.form
+    channel_id = data.get('channel_id')
+    thr = Thread(target=main_function_all, args=[channel_id])
+    thr.start()
     return Response(), 200
 
 
 def breathhh_metrics(higher_date, lower_date, start, end):
-    user_acquisition = int(breathhh_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)
-                           ['ga:newUsers'][0])
+    user_acquisition = int(breathhh_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)['ga:newUsers'][0])
 
-    conversion_to_store = calculations.compare2_0(int(breathhh_ga_metrics(startDate=start, metrics="ga:users",
-                                                                          endDate=end,
-                                                                          dimensions=[{'name': 'ga:pagePath'}],
-                                                                          filters='ga:pagePath=@/webstore/detail/ext')
-                                                      ['ga:users'].sum()),
-                                                  user_acquisition)
+    conversion_to_store = calculations.compare2_0(int(
+        breathhh_ga_metrics(startDate=start, metrics="ga:users",
+                            endDate=end,
+                            dimensions=[{'name': 'ga:pagePath'}],
+                            filters='ga:pagePath=@/webstore/detail/ext')
+        ['ga:users'].sum()),
+        user_acquisition)
 
     conversion_to_user = calculations.compare2_0(new_users_db(higher_date, lower_date),
                                                  user_acquisition)
-
-    bounce_rate = breathhh_ga_metrics(startDate=start, metrics="ga:bounceRate", endDate=end)['ga:bounceRate'][0]
+    try:
+        bounce_rate = breathhh_ga_metrics(startDate=start, metrics="ga:bounceRate", endDate=end)['ga:bounceRate'][0]
+    except IndexError:
+        bounce_rate = 0
 
     k_factor_rate = calculations.compare2_0(int(breathhh_ga_metrics(
         startDate=start, endDate=end, metrics="ga:newUsers",
@@ -252,8 +169,6 @@ def breathhh_metrics(higher_date, lower_date, start, end):
     onboarding_rate = calculations.compare2_0(onboard_users(higher_date, lower_date), new_users)
     activation_rate = ''  # пока не нужно
     active_users = active_users_db(higher_date, lower_date)
-    one_day_retention = retention_one_day()
-    seven_day_retention = ''
     deleted_users_rate = calculations.compare2_0(acc_removed(higher_date, lower_date), active_users)
     uninstall_rate = calculations.compare2_0(ext_removed(higher_date, lower_date), active_users)
     conversion_feedback = conversion_to_feedback(higher_date, lower_date)
@@ -261,24 +176,26 @@ def breathhh_metrics(higher_date, lower_date, start, end):
     mood_picker_dairy_rate = picker_relevance_rate(higher_date, lower_date)
     warm_up_rel_rate = warm_up_relevance_rate(higher_date, lower_date)
     background_noise_rate = ''
+    retention_one_day = retention_by_day(higher_date, lower_date, days=1)
+    retention_seven_day = retention_by_day(higher_date, lower_date, days=7)
 
     return user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users, \
-           install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention, \
-           deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate, \
-           warm_up_rel_rate, background_noise_rate
+           install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate, \
+           conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate, \
+           warm_up_rel_rate, background_noise_rate, retention_one_day, retention_seven_day
 
 
 def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower_date_prev, start_prev, end_prev):
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users, \
-    install_rate, onboarding_rate, activation_rate, active_users, one_day_retention, seven_day_retention, \
-    deleted_users_rate, uninstall_rate, conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate, \
-    warm_up_rel_rate, background_noise_rate = breathhh_metrics(higher_date, lower_date, start, end)
+    install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate, \
+    conversion_feedback, breathing_sim_rel_rate, mood_picker_dairy_rate, warm_up_rel_rate, background_noise_rate, \
+    retention_one_day, retention_seven_day = breathhh_metrics(higher_date, lower_date, start, end)
 
     user_acquisition_prev, conversion_to_store_prev, conversion_to_user_prev, bounce_rate_prev, k_factor_rate_prev, \
     new_users_prev, install_rate_prev, onboarding_rate_prev, activation_rate_prev, active_users_prev, \
-    one_day_retention_prev, seven_day_retention_prev, deleted_users_rate_prev, uninstall_rate_prev, \
-    conversion_feedback_prev, breathing_sim_rel_rate_prev, mood_picker_dairy_rate_prev, warm_up_rel_rate_prev, \
-    background_noise_rate_prev = breathhh_metrics(higher_date_prev, lower_date_prev, start_prev, end_prev)
+    deleted_users_rate_prev, uninstall_rate_prev, conversion_feedback_prev, breathing_sim_rel_rate_prev, \
+    mood_picker_dairy_rate_prev, warm_up_rel_rate_prev, background_noise_rate_prev, retention_one_day_prev, \
+    retention_seven_day_prev = breathhh_metrics(higher_date_prev, lower_date_prev, start_prev, end_prev)
 
     user_acquisition_compare = calculations.compare(user_acquisition, user_acquisition_prev)
     conversion_to_store_compare = calculations.compare(conversion_to_store, conversion_to_store_prev)
@@ -290,8 +207,6 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
     onboarding_rate_compare = calculations.compare(onboarding_rate, onboarding_rate_prev)
     activation_rate = ''  # in progress
     active_users_prev_compare = calculations.compare(active_users, active_users_prev)
-    one_day_retention_compare = ''
-    seven_day_retention_compare = ''
     deleted_users_rate_compare = calculations.compare(deleted_users_rate, deleted_users_rate_prev)
     uninstall_rate_compare = calculations.compare(uninstall_rate, uninstall_rate_prev)
     conversion_feedback_compare = calculations.compare(conversion_feedback, conversion_feedback_prev)
@@ -299,13 +214,14 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
     mood_picker_dairy_rate_compare = calculations.compare(mood_picker_dairy_rate, mood_picker_dairy_rate_prev)
     warm_up_rel_rate_compare = calculations.compare(warm_up_rel_rate, warm_up_rel_rate_prev)
     background_noise_rate_compare = ''  # in progress
+    retention_one_day_compare = calculations.compare(retention_one_day, retention_one_day_prev)
+    retention_seven_day_compare = calculations.compare(retention_seven_day, retention_seven_day_prev)
 
     return user_acquisition_compare, conversion_to_store_compare, conversion_to_user_compare, bounce_rate_compare, \
            k_factor_rate_compare, new_users_compare, install_rate_compare, onboarding_rate_compare, activation_rate, \
-           active_users_prev_compare, one_day_retention_compare, seven_day_retention_compare, \
-           deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
+           active_users_prev_compare, deleted_users_rate_compare, uninstall_rate_compare, conversion_feedback_compare, \
            breathing_sim_rel_rate_compare, mood_picker_dairy_rate_compare, warm_up_rel_rate_compare, \
-           background_noise_rate_compare
+           background_noise_rate_compare, retention_one_day_compare, retention_seven_day_compare
 
 
 # schedule.every(5).seconds.do(breathhh_week)
@@ -342,7 +258,6 @@ def new_users_db_installed(higher_date, lower_date=0):
                                "WHERE extension_state = 'extension_installed' "
                                f"and created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     return count.iloc[0]["count"]
 
 
@@ -351,7 +266,6 @@ def new_users_db(higher_date, lower_date=0):
                                "FROM users "
                                "WHERE created_at between"
                                f" now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     return count.iloc[0]["count"]
 
 
@@ -362,7 +276,6 @@ def onboard_users(higher_date, lower_date=0):
                                "and extension_state ='extension_installed' "
                                f"and created_at between now() - interval'{higher_date} days' and now() - interval "
                                f"'{lower_date} days'")
-
     return count.iloc[0]["count"]
 
 
@@ -370,7 +283,6 @@ def active_users_db(higher_date, lower_date=0):
     count = breathhh_get(query="SELECT count(distinct user_id) "
                                "FROM actions where created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     return count.iloc[0]["count"]
 
 
@@ -380,7 +292,6 @@ def ext_removed(higher_date, lower_date=0):
                                f"select count(id) from users right join active_users "
                                f"on active_users.user_id = users.id "
                                f"where extension_state = 'extension_removed'")
-
     return count.iloc[0]["count"]
 
 
@@ -393,7 +304,6 @@ def acc_removed(higher_date, lower_date=0):
                                f"SELECT count(id) "
                                f"FROM users RIGHT JOIN active_users ON active_users.user_id = users.id "
                                f"WHERE name = 'deleted_user'")
-
     return count.iloc[0]["count"]
 
 
@@ -408,7 +318,6 @@ def conversion_to_feedback(higher_date, lower_date=0):
                                            "FROM feedbacks "
                                            f"WHERE created_at between now()-interval '{higher_date} days' "
                                            f"and now()-interval '{lower_date} days'")
-
     percent = calculations.compare2_0(del_with_feedback.iloc[0]['count_feedback'], del_users.iloc[0]['count_del'])
     return percent
 
@@ -418,7 +327,6 @@ def simulator_relevance_rate(higher_date, lower_date=0):
                                "FROM actions "
                                "WHERE kind in ('extension','breathing') and created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     sum_all = count['active_time'].count()
     more = (count['active_time'] > 5).sum()
     calc = calculations.compare2_0(more, sum_all)
@@ -449,7 +357,6 @@ def warm_up_relevance_rate(higher_date, lower_date=0):
     count = breathhh_get(query="SELECT EXTRACT(seconds FROM closed_at - opened_at) AS active_time "
                                "FROM actions where url='diary' and created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     sum_all = count['active_time'].count()
     more = (count['active_time'] > 5).sum()
     calc = calculations.compare2_0(more, sum_all)
@@ -461,11 +368,10 @@ def feedback_users(higher_date, lower_date=0):
                                "FROM feedbacks "
                                "WHERE created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
-
     return count.iloc[0]["count"]
 
 
-def retention_one_day(higher_date=60, lower_date=0, days=1):
+def retention_by_day(higher_date=60, lower_date=0, days=1):
     ret = breathhh_get(
         query="WITH mydates AS "
               "(SELECT date_trunc('day', dates.dates)::date AS dates FROM generate_series"
@@ -479,11 +385,14 @@ def retention_one_day(higher_date=60, lower_date=0, days=1):
               "LEFT JOIN actions AS future_actions on actions.user_id = future_actions.user_id and "
               "date_trunc('day', actions.created_at)::date = "
               f"date_trunc('day', future_actions.created_at)::date - interval '{days} Days' "
-              "WHERE actions.created_at between "
-              f"now() - interval '{higher_date} days' and now()-interval '{lower_date} days' and "
-              "actions.kind != 'url' group by 1) "
-              "SELECT dates, active_users, retained_users, retention "
+              "WHERE actions.kind != 'url' "
+              "group by 1) "
+              "SELECT avg(retention) "
               "FROM mydates "
-              "LEFT JOIN ret on mydates.dates = ret.date")
+              "LEFT JOIN ret on mydates.dates = ret.date "
+              f"WHERE dates between now() - interval '{higher_date + 1} days' and now() - interval '{lower_date} days'")
+    return ret['avg'][0]
 
-    return ret
+#
+# print(retention_by_day(8,1,days=1))
+#
