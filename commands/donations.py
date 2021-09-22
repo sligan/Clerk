@@ -8,6 +8,7 @@ from datetime import datetime
 load_dotenv()
 
 
+# статистика bmc
 @app.route('/donations-day', methods=['POST'])
 def donations_day():
     data = request.form
@@ -54,7 +55,7 @@ def donations_month():
 def donations_all():
     data = request.form
     channel_id = data.get('channel_id')
-    support_price, support_count = bmc(timestamps=calculations.timestamps(10000))
+    support_price, support_count = bmc(timestamps=calculations.timestamps(calculations.start_day()))
     client.chat_postMessage(channel=channel_id,
                             text='*Donations - All*\n'
                                  f"Period: All time \n"
@@ -63,6 +64,7 @@ def donations_all():
     return Response(), 200
 
 
+# информация из api bmc
 def bmc(timestamps):
     support_price = 0
     support_count = 0

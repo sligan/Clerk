@@ -2,6 +2,7 @@ from flask import request, Response
 from main import app, client
 
 
+# help с описанием метрик
 @app.route('/breathhh-help', methods=['POST'])
 def breathhh_help():
     data = request.form

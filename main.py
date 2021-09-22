@@ -13,6 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 client = slack.WebClient(token=os.getenv('TOKEN'))
 slack_event_adapter = SlackEventAdapter(os.getenv('SECRET'), '/slack/events', app)
+# для google analytics
 scopes = ['https://www.googleapis.com/auth/analytics.readonly']
 key_file_loc = os.getenv('GA_KEY_LOC')
 credentials = ServiceAccountCredentials.from_json_keyfile_name(key_file_loc, scopes)

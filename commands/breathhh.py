@@ -13,6 +13,7 @@ from threading import Thread
 load_dotenv()
 
 
+# функция для вывода интервала (день\неделя\месяц)
 def main_function(frst, scnd, frst_ga, scnd_ga, comp_frst, comp_scnd, comp_frst_ga, comp_scnd_ga, name, channel_id):
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users \
         , install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate \
@@ -63,6 +64,7 @@ def main_function(frst, scnd, frst_ga, scnd_ga, comp_frst, comp_scnd, comp_frst_
                                  f'Background Noise Usage Rate: :thinking_face:')
 
 
+#  функции для избежания ответа "operation time out" от Slack
 @app.route('/breathhh-day', methods=['POST'])
 def breathhh_day():
     data = request.form
@@ -93,6 +95,7 @@ def breathhh_month():
     return Response(), 200
 
 
+# только вывод статистики за всё время
 def main_function_all(channel_id):
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users, \
     install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate, \
@@ -142,6 +145,7 @@ def breathhh_all():
     return Response(), 200
 
 
+# функция которая считает статистики за период по заданным интервалам
 def breathhh_metrics(higher_date, lower_date, start, end):
     user_acquisition = int(breathhh_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)['ga:newUsers'][0])
 
@@ -185,6 +189,7 @@ def breathhh_metrics(higher_date, lower_date, start, end):
            warm_up_rel_rate, background_noise_rate, retention_one_day, retention_seven_day
 
 
+# возвращает % от сравнения интервалов (настоящий / предыдущий)
 def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower_date_prev, start_prev, end_prev):
     user_acquisition, conversion_to_store, conversion_to_user, bounce_rate, k_factor_rate, new_users, \
     install_rate, onboarding_rate, activation_rate, active_users, deleted_users_rate, uninstall_rate, \
@@ -224,6 +229,7 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
            background_noise_rate_compare, retention_one_day_compare, retention_seven_day_compare
 
 
+# функция для вывода информации из GA
 def breathhh_ga_metrics(startDate, metrics, endDate, dimensions=None, filters=''):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_BREATHHH'),
@@ -246,6 +252,7 @@ def breathhh_ga_metrics(startDate, metrics, endDate, dimensions=None, filters=''
         return pd.DataFrame(df_rows, columns=df_columns)
 
 
+# SQL запросы
 def new_users_db_installed(higher_date, lower_date=0):
     count = breathhh_get(query="SELECT count(id) "
                                "FROM users "
@@ -388,8 +395,10 @@ def retention_by_day(higher_date=60, lower_date=0, days=1):
     return ret['avg'][0]
 
 
+# информация ии breathhh-week каждое воскресенье в 23:59 по МСК
 schedule.every().sunday.at('20:59').do(main_function, 7, 0, '7DaysAgo', '0DaysAgo', 14, 7, '14DaysAgo',
                                        '7DaysAgo', 'Week', os.getenv('CHANNEL'))
 
-schedule.every(30).days.do(main_function, 30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo',
-                           'Month', os.getenv('CHANNEL'))
+# информация из breathhh-month каждые 30 дней в 23:59 по МСК
+schedule.every(30).days.at('20:59').do(main_function, 30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo',
+                                       'Month', os.getenv('CHANNEL'))

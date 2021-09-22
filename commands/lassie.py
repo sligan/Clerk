@@ -140,6 +140,7 @@ def lassie_all():
     return Response(), 200
 
 
+# функция считает метрики за выбранный период и сравнивает с прошлым аналогичным периодом
 def lassie_metrics(start, end, higher_date, lower_date):
     new_users = new_users_db(lower_date)
     compare_nu = calculations.compare(new_users, new_users_db(higher_date, lower_date))
@@ -190,6 +191,7 @@ def lassie_metrics(start, end, higher_date, lower_date):
            compare_or, average_interval_increases_rate, compare_ir, compare_cau, active_users
 
 
+# ga api
 def lassie_ga_metrics(startDate, metrics, endDate='today', dimensions=None):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_LESSIE'),
@@ -206,6 +208,7 @@ def lassie_ga_metrics(startDate, metrics, endDate='today', dimensions=None):
                     return value
 
 
+# SQL запросы
 def new_users_db(first_date, second_date=0):
     count = lassie_get(query="SELECT count(distinct(id)) FROM users WHERE created_at between "
                              f"now() - interval '{first_date} days' and now() - interval '{second_date} days'")

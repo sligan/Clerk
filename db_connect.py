@@ -6,6 +6,7 @@ import pandas as pd
 load_dotenv()
 
 
+# db connections
 def breathhh_connection():
     conn = psycopg2.connect(database=os.getenv('DB_BRTH'),
                             user=os.getenv('USER_BRTH'),
@@ -70,3 +71,4 @@ def alpaca_get(query="""SELECT * FROM teams"""):
         columns.append(col[0])
     df = pd.DataFrame(result, columns=columns)
     return df
+# переделать бы

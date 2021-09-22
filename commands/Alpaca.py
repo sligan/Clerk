@@ -16,10 +16,10 @@ def alpaca_day():
     channel_id = data.get('channel_id')
 
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=1, lower_date=0, start='1DaysAgo', end='today')
+    active_teams = alpaca_metrics(higher_date=1, lower_date=0, start='1DaysAgo', end='today')
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
-        new_teams_compare, aha_moment_rate_compare, active_teams_compare \
+    new_teams_compare, aha_moment_rate_compare, active_teams_compare \
         = compare_metrics(higher_date=1, lower_date=0, start='1DaysAgo', end='today', higher_date_prev=2,
                           lower_date_prev=1, start_prev='2DaysAgo', end_prev='1DaysAgo')
 
@@ -49,10 +49,10 @@ def alpaca_week():
     channel_id = data.get('channel_id')
 
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=7, lower_date=0, start='7DaysAgo', end='today')
+    active_teams = alpaca_metrics(higher_date=7, lower_date=0, start='7DaysAgo', end='today')
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
-        new_teams_compare, aha_moment_rate_compare, active_teams_compare \
+    new_teams_compare, aha_moment_rate_compare, active_teams_compare \
         = compare_metrics(higher_date=7, lower_date=0, start='7DaysAgo', end='today', higher_date_prev=14,
                           lower_date_prev=7, start_prev='14DaysAgo', end_prev='7DaysAgo')
 
@@ -82,10 +82,10 @@ def alpaca_month():
     channel_id = data.get('channel_id')
 
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=30, lower_date=0, start='30DaysAgo', end='today')
+    active_teams = alpaca_metrics(higher_date=30, lower_date=0, start='30DaysAgo', end='today')
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
-        new_teams_compare, aha_moment_rate_compare, active_teams_compare \
+    new_teams_compare, aha_moment_rate_compare, active_teams_compare \
         = compare_metrics(higher_date=30, lower_date=0, start='30DaysAgo', end='today', higher_date_prev=60,
                           lower_date_prev=30, start_prev='60DaysAgo', end_prev='30DaysAgo')
 
@@ -115,8 +115,8 @@ def alpaca_all():
     channel_id = data.get('channel_id')
 
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=calculations.start_day(), lower_date=0,
-                                      start=f'{calculations.start_day()}DaysAgo', end='today')
+    active_teams = alpaca_metrics(higher_date=calculations.start_day(), lower_date=0,
+                                  start=f'{calculations.start_day()}DaysAgo', end='today')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – All*\n'
@@ -136,6 +136,7 @@ def alpaca_all():
     return Response(), 200
 
 
+# функция для вывода информации из GA
 def alpaca_ga_metrics(startDate, metrics, endDate, dimensions=None):
     response = main.analytics.reports().batchGet(
         body=dict(reportRequests=[dict(viewId=os.getenv('GA_VIEW_ID_ALPACA'),
@@ -152,6 +153,7 @@ def alpaca_ga_metrics(startDate, metrics, endDate, dimensions=None):
                     return value
 
 
+# функция которая считает статистики за период по заданным интервалам
 def alpaca_metrics(higher_date, lower_date, start, end):
     new_users_landing = alpaca_ga_metrics(startDate=start, metrics="ga:newUsers", endDate=end)
 
@@ -166,21 +168,22 @@ def alpaca_metrics(higher_date, lower_date, start, end):
 
     new_teams = new_teams_db(higher_date, lower_date)
 
-    aha_moment_rate = calculations.compare2_0(aha_moment(higher_date, lower_date), new_teams_db(higher_date, lower_date))
+    aha_moment_rate = calculations.compare2_0(aha_moment(higher_date, lower_date),
+                                              new_teams_db(higher_date, lower_date))
 
     active_teams = active_teams_db(higher_date, lower_date)
 
     return new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams
+           active_teams
 
 
+# возвращает % от сравнения интервалов (настоящий / предыдущий)
 def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower_date_prev, start_prev, end_prev):
-
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
-        active_teams = alpaca_metrics(higher_date=higher_date, lower_date=lower_date, start=start, end=end)
+    active_teams = alpaca_metrics(higher_date=higher_date, lower_date=lower_date, start=start, end=end)
 
     new_users_landing_prev, conversion_to_install_prev, bounce_rate_prev, k_factor_rate_prev, new_teams_prev, \
-        aha_moment_rate_prev, active_teams_prev \
+    aha_moment_rate_prev, active_teams_prev \
         = alpaca_metrics(higher_date=higher_date_prev, lower_date=lower_date_prev, start=start_prev, end=end_prev)
 
     new_users_compare = calculations.compare(new_users_landing, new_users_landing_prev)
@@ -198,9 +201,10 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
     active_teams_compare = calculations.compare(active_teams, active_teams_prev)
 
     return new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
-        new_teams_compare, aha_moment_rate_compare, active_teams_compare
+           new_teams_compare, aha_moment_rate_compare, active_teams_compare
 
 
+# SQL запросы
 def new_teams_db(higher_date, lower_date=0):
     count = alpaca_get(query="select count(team_id) from teams where created_at between "
                              f"now()-interval '{higher_date} days' and now()-interval '{lower_date} days'")
