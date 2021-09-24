@@ -206,15 +206,24 @@ def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower
 
 # SQL запросы
 def new_teams_db(higher_date, lower_date=0):
-    count = alpaca_get(query="select count(team_id) from teams where created_at between "
+    count = alpaca_get(query="select count(id) from teams where created_at between "
                              f"now()-interval '{higher_date} days' and now()-interval '{lower_date} days'")
     return count.iloc[0]["count"]
 
 
 def aha_moment(higher_date, lower_date=0):
-    count = alpaca_get(query="with ids as(select team_id from actions where created_at between "
-                             f"now()-interval '{higher_date} days' and now() - interval '{lower_date} days' "
-                             "group by 1 having count(value) > 2) select count(1) from ids")
+    count = alpaca_get(query="WITH act as("
+                             "SELECT actions.team_id AS sss "
+                             "FROM actions "
+                             "WHERE actions.created_at between "
+                             f"now()-interval '{higher_date} days' and now()-interval '{lower_date} days' "
+                             f"GROUP BY actions.team_id "
+                             f"HAVING count(value) > 2) "
+                             f"SELECT count(distinct id) "
+                             f"FROM teams "
+                             f"JOIN act on act.sss = teams.id "
+                             f"WHERE teams.created_at between "
+                             f"now()-interval '{higher_date} days' and now()-interval '{lower_date} days'")
     return count.iloc[0]["count"]
 
 
