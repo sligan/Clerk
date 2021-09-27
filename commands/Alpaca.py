@@ -20,8 +20,8 @@ def alpaca_day():
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
     new_teams_compare, aha_moment_rate_compare, active_teams_compare \
-        = compare_metrics(higher_date=1, lower_date=0, start='1DaysAgo', end='today', higher_date_prev=2,
-                          lower_date_prev=1, start_prev='2DaysAgo', end_prev='1DaysAgo')
+        = al_compare_metrics(higher_date=1, lower_date=0, start='1DaysAgo', end='today', higher_date_prev=2,
+                             lower_date_prev=1, start_prev='2DaysAgo', end_prev='1DaysAgo')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Day*\n'
@@ -53,8 +53,8 @@ def alpaca_week():
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
     new_teams_compare, aha_moment_rate_compare, active_teams_compare \
-        = compare_metrics(higher_date=7, lower_date=0, start='7DaysAgo', end='today', higher_date_prev=14,
-                          lower_date_prev=7, start_prev='14DaysAgo', end_prev='7DaysAgo')
+        = al_compare_metrics(higher_date=7, lower_date=0, start='7DaysAgo', end='today', higher_date_prev=14,
+                             lower_date_prev=7, start_prev='14DaysAgo', end_prev='7DaysAgo')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Week*\n'
@@ -86,8 +86,8 @@ def alpaca_month():
 
     new_users_compare, conversion_to_install_compare, bounce_rate_compare, k_factor_rate_compare, \
     new_teams_compare, aha_moment_rate_compare, active_teams_compare \
-        = compare_metrics(higher_date=30, lower_date=0, start='30DaysAgo', end='today', higher_date_prev=60,
-                          lower_date_prev=30, start_prev='60DaysAgo', end_prev='30DaysAgo')
+        = al_compare_metrics(higher_date=30, lower_date=0, start='30DaysAgo', end='today', higher_date_prev=60,
+                             lower_date_prev=30, start_prev='60DaysAgo', end_prev='30DaysAgo')
 
     client.chat_postMessage(channel=channel_id,
                             text='*Alpaca – Month*\n'
@@ -178,7 +178,7 @@ def alpaca_metrics(higher_date, lower_date, start, end):
 
 
 # возвращает % от сравнения интервалов (настоящий / предыдущий)
-def compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower_date_prev, start_prev, end_prev):
+def al_compare_metrics(higher_date, lower_date, start, end, higher_date_prev, lower_date_prev, start_prev, end_prev):
     new_users_landing, conversion_to_install, bounce_rate, k_factor_rate, new_teams, aha_moment_rate, \
     active_teams = alpaca_metrics(higher_date=higher_date, lower_date=lower_date, start=start, end=end)
 

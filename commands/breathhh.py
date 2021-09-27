@@ -1,5 +1,4 @@
 import os
-import schedule
 import main
 from flask import request, Response
 from db_connect import breathhh_get
@@ -168,7 +167,7 @@ def breathhh_metrics(higher_date, lower_date, start, end):
         startDate=start, endDate=end, metrics="ga:newUsers",
         dimensions=[{'name': 'ga:referralPath'}])['ga:newUsers'][0]), user_acquisition)
 
-    new_users = new_users_db_installed(higher_date, lower_date)
+    new_users = new_users_db(higher_date, lower_date)
     install_rate = calculations.compare2_0(new_users_db_installed(higher_date, lower_date), user_acquisition)
     onboarding_rate = calculations.compare2_0(onboard_users(higher_date, lower_date), new_users)
     activation_rate = ''  # пока не нужно
@@ -356,7 +355,7 @@ def picker_relevance_rate(higher_date, lower_date=0):
 
 def warm_up_relevance_rate(higher_date, lower_date=0):
     count = breathhh_get(query="SELECT EXTRACT(seconds FROM closed_at - opened_at) AS active_time "
-                               "FROM actions where url='diary' and created_at between "
+                               "FROM actions where kind='warming_eyes' and created_at between "
                                f"now() - interval '{higher_date} days' and now() - interval '{lower_date} days'")
     sum_all = count['active_time'].count()
     more = (count['active_time'] > 5).sum()
@@ -393,12 +392,3 @@ def retention_by_day(higher_date=60, lower_date=0, days=1):
               "LEFT JOIN ret on mydates.dates = ret.date "
               f"WHERE dates between now() - interval '{higher_date + 1} days' and now() - interval '{lower_date} days'")
     return ret['avg'][0]
-
-
-# информация ии breathhh-week каждое воскресенье в 23:59 по МСК
-schedule.every().sunday.at('20:59').do(main_function, 7, 0, '7DaysAgo', '0DaysAgo', 14, 7, '14DaysAgo',
-                                       '7DaysAgo', 'Week', os.getenv('CHANNEL'))
-
-# информация из breathhh-month каждые 30 дней в 23:59 по МСК
-schedule.every(30).days.at('20:59').do(main_function, 30, 0, '30DaysAgo', '0DaysAgo', 60, 30, '60DaysAgo', '30DaysAgo',
-                                       'Month', os.getenv('CHANNEL'))

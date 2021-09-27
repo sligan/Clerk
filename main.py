@@ -32,4 +32,5 @@ if __name__ == '__main__':
     from commands.donations import *
     from commands.Alpaca import *
     from commands.help import *
+    from commands.reports import *
     app.run(port=os.getenv('PORT'))

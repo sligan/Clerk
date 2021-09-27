@@ -46,7 +46,7 @@ def compare2_0(lower, higher):
         return '0'
 
 
-# для запуска двух потоков schedule
+# schedule
 def run_continuously(interval=1):
     cease_continuous_run = threading.Event()
 
