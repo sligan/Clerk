@@ -6,9 +6,13 @@
 # Yahht-Clerk
 Analytics and supporting infrastructure stuff.   
 Can show important metrics on Breathhh, Lassie-Smoke, Alpaca in Slack.  
-``/alpaca-help`` ``/breathhh-help`` ``/lassie-help`` to describing the metrics for the desired product  
+Data for calculations are taken from Google Analytics and PostgreSQL databases.  
+``/alpaca-help`` ``/breathhh-help`` ``/lassie-help`` to describing the metrics for the desired product.  
 
-Data for calculations are taken from Google Analytics and PostgreSQL databases
+
+
+## Bot message format :
+Metric name (abbreviated name) : value (comparison with the past similar period).
 
   
   
