@@ -16,4 +16,4 @@ Metric name (abbreviated name) : value (comparison with the past similar period)
 
   
   
-![alt text](https://puu.sh/IhxUi/e1debaf448.gif)
+![alt text](https://puu.sh/IhJU3/58a6665ab2.gif)
